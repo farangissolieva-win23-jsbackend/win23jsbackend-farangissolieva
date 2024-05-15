@@ -1,0 +1,66 @@
+﻿<header class="header">
+    <div class="container">
+        <a href="/" id="logo"> <img src="/images/light-mode.svg" alt="logo"> </a>
+
+        <button class="btn-mobile">
+            <i class="fa-regular fa-bars"></i>
+        </button>
+        <div id="menu">
+            <nav>
+                <NavLink href="/#overview" class="menu-link">Overview</NavLink>
+                <NavLink href="/#features" class="menu-link">Features</NavLink>
+                <AuthorizeView>
+                    <Authorized>
+                        <NavLink href="/courses" class="menu-link">Courses</NavLink>
+                    </Authorized>
+                </AuthorizeView>
+                <NavLink href="/contact" class="menu-link">Contact</NavLink>
+            </nav>
+        </div>
+        <div class="account-buttons">
+            <AuthorizeView>
+                <Authorized>
+                    @if (ProfileImg == null)
+                    {
+                        <a href="/account/manage"> <img class="avatar" src="/images/uploads/profiles/avatar.svg" /></a>
+                    }
+                    else
+                    {
+                        <a href="/account/manage">  <img class="avatar" src="images/uploads/profiles/@ProfileImg" /></a>
+                       
+                    }
+                    
+                    
+                 </Authorized>
+                <NotAuthorized>
+                    <a href="/account/login" class="btn-gray"><i class="fa-regular fa-right-to-bracket"></i><span>Sign In</span></a>
+                    <a href="/account/register" class="btn-theme"><i class="fa-regular fa-user-plus"></i><span>Sign Up</span></a>
+                 </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <div id="menu-overlay"></div>
+
+    </div>
+</header>
+
+
+    @inject AuthenticationStateProvider AuthStateProvider
+
+@code {
+    private string ProfileImg { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity!.IsAuthenticated)
+        {
+            var userProfile  = await UserManager.FindByEmailAsync(user.Identity.Name!);
+            if (userProfile != null && userProfile.UserProfile != null && userProfile.UserProfile.ProfileImg != null)
+            {
+                ProfileImg = userProfile.UserProfile.ProfileImg;
+            }
+        }
+    }
+}

@@ -1,0 +1,74 @@
+﻿@inject NavigationManager NavManager
+<aside>
+    <div class="profile-info">
+        <div class="profile-img">
+            @if (ProfileImg == null)
+            {
+                <img src="images/uploads/profiles/avatar.svg" alt="@($"{FirstName} {LastName}")" />
+            }
+            else
+            {
+                <img src="images/uploads/profiles/@ProfileImg" alt="@($"{FirstName} {LastName}")" />
+            }
+            <InputFile id="fileUploader" OnChange="HandleFileUpload" style="display: none"/>
+           <label for="fileUploader" class="button-circle"><i class="fa-regular fa-refresh"></i> </label>
+        </div>
+
+        <h5>@($"{FirstName} {LastName}")</h5>
+        <p>@Email</p>
+    </div>
+
+    <nav>
+        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/Index") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Index">
+            <i class="fa-regular fa-gear"></i> <span>Account Details</span>
+        </NavLink>
+        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/Security") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Security">
+            <i class="fa-regular fa-lock"></i> <span>Security</span>
+        </NavLink>
+        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/Notification") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Notification">
+            <i class="fa-regular fa-bell"></i> <span>Notification</span>
+        </NavLink>
+       
+        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/SavedCourses") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/SavedCourses">
+            <i class="fa-regular fa-bookmark"></i> <span>Saved Courses</span>
+        </NavLink>
+        <NavLink class="btn-transparent" href="Auth/SignOut"><i class="fa-regular fa-right-from-bracket"></i> <span>Sign Out</span></NavLink>
+    </nav>
+</aside>
+
+
+@code {
+    [Parameter]
+    public ApplicationUser UserInfo { get; set; } 
+
+    public string Email => UserInfo?.Email ?? null!;
+    public string FirstName => UserInfo?.UserProfile?.FistName ?? null!;
+    public string LastName => UserInfo?.UserProfile?.LastName ?? null!;
+    public string ProfileImg => UserInfo?.UserProfile?.ProfileImg ?? null!;
+    
+    private IBrowserFile file;
+
+    private async Task HandleFileUpload(InputFileChangeEventArgs e)
+    {
+        file = e.File;
+
+        if (file != null)
+        {
+            var user = await UserManager.FindByEmailAsync(UserInfo.Email!);
+            if (user != null)
+            {
+                var fileName = $"p_{user.Id}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+                var filePath = Path.Combine("wwwroot/images/uploads/profiles", fileName);
+
+                using (var fs = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.OpenReadStream().CopyToAsync(fs);
+                }
+
+                user.UserProfile!.ProfileImg = fileName;
+                await UserManager.UpdateAsync(user);
+            }
+        }
+    }
+
+}

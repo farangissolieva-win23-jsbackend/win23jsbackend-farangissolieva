@@ -1,0 +1,47 @@
+﻿<section id="downloadApp">
+    <div class="container">
+        <img class="image-wrapper" src="images/download/screens.svg" alt="screen">
+
+        <div class="content">
+            <h1>Download Our App for Any Devices:</h1>
+
+            <div class="boxes">
+
+                @foreach (var platform in Platforms)
+                {
+                    <div class="box">
+                        <div class="text">
+                            <p class="title">@platform.Name</p>
+                            <div class="stars">
+                                <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                            </div>
+                            <h5>@platform.Title</h5>
+                            <p class="rate">rating @platform.Ratings,  @platform.Reviews + reviews</p>
+                        </div>
+                        <a href="#"><img src="images/download/@platform.Platform" alt="appstore"></a>
+
+                    </div>
+
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+    public class PlatformInfo
+    {
+        public string Name { get; set; } = null!;
+        public string Title { get; set; } = null!;
+        public string Ratings { get; set; } = null!;
+        public string Reviews { get; set; } = null!;
+        public string Platform { get; set; } = null!;
+    }
+
+    List<PlatformInfo> Platforms = new List<PlatformInfo>()
+    {
+        new PlatformInfo { Name = "App Store", Title = "Editor's Choice", Ratings = "4.7", Reviews = "187K", Platform = "appstore.svg" },
+        new PlatformInfo { Name = "Google Play", Title = "App of the Day", Ratings = "4.8", Reviews = "30K", Platform = "googleplay.svg" },
+       
+    };
+}

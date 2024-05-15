@@ -1,0 +1,10 @@
+﻿<div id="statusMessage" class="alert alert-@MessageType">@MessageText</div>
+
+@code {
+    [Parameter]
+    public string? MessageType { get; set; }
+
+    [Parameter]
+    public string? MessageText { get; set; }
+
+}

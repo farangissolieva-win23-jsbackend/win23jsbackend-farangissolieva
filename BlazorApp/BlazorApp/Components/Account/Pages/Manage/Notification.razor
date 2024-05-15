@@ -1,0 +1,118 @@
+﻿@page "/Account/Manage/Notification"
+
+<div class="container">
+	<section id="account-security">
+		<AsideProfile UserInfo="user" />
+
+		<div class="details">
+			<StatusMessage />
+
+			<section class="password-info">
+				<EditForm method="post" Model="NotificationForm" FormName="securityform" OnValidSubmit="OnValidSubmitAsync" asp-route-ReturnUrl="@ReturnUrl" novalidate>
+					<DataAnnotationsValidator />
+					<h2>Notifications</h2>
+					
+					<div class="content">
+						<div id="form-email" class="input-group">
+							<label>Preferred email for notifications</label>
+							<ValidationMessage For="() => NotificationForm.Email" />
+							<InputText @bind-Value="NotificationForm.Email" type="email" placeholder="example@gmail.com" />
+						</div>
+						
+						<div class="toggle-container">
+							<div class="btn-switch">
+								<label class="switch" for="subscribe-mode">
+									<InputCheckbox @bind-Value="NotificationForm.IsSubscribe" id="subscribe-mode" />
+									<span class="slider round"></span>
+								</label>
+							</div>
+							<div class="text">
+								<h6>Subscribe to Newsletter</h6>
+								<p>Nec, posuere non felis duis massa vitae aliquet interdum scelerisque. Neque ullamcorper.</p>
+							</div>
+						</div>
+						
+						<div class="toggle-container">
+							<div class="btn-switch">
+								<label class="switch" for="switch-mode">
+									<InputCheckbox @bind-Value="NotificationForm.IsDarkMode" id="subscribe-mode" />
+									<span class="slider round"></span>
+								</label>
+							</div>
+							<div class="text">
+								<h6>Use Dark Mode Theme in Application</h6>
+								<p>Tortor massa porttitor enim tristique neque fermentum sed.</p>
+							</div>
+						</div>
+
+						<div class="form-buttons">
+							<button class="btn-gray" type="reset">Cancel</button>
+							<button class="btn-theme" type="submit">Save password</button>
+						</div>
+					</div>
+				</EditForm>
+
+			</section>
+			
+		</div>
+	</section>
+</div>
+
+@code {
+	private string? message;
+
+	[SupplyParameterFromQuery]
+	private string? ReturnUrl { get; set; }
+
+	[SupplyParameterFromQuery]
+	private bool? IsDark { get; set; }
+
+	[SupplyParameterFromQuery]
+	private bool? IsSubscribe { get; set; }
+	
+
+	[SupplyParameterFromForm]
+	public NotificationFormModel NotificationForm { get; set; } = new();
+		
+
+	private ApplicationUser user = default!;
+
+	[CascadingParameter]
+	private HttpContext HttpContext { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+	}
+
+	private async Task OnValidSubmitAsync()
+	{
+		var result = await UserManager.DeleteAsync(user);
+		if (!result.Succeeded)
+		{
+			message = "Error: Unexpected error occurred deleting user.";
+		}
+
+		await SignInManager.SignOutAsync();
+
+		var userId = await UserManager.GetUserIdAsync(user);
+		Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+
+		RedirectManager.RedirectToCurrentPage();
+	}
+	
+	public class NotificationFormModel
+	{
+		[Display(Name = "Email address", Prompt = "Enter your email address", Order = 2)]
+		[Required(ErrorMessage = "Email address is required")]
+		[EmailAddress]
+		[RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email address")]
+		public string Email { get; set; } = null!;
+
+		public bool IsSubscribe { get; set; } = false;
+		
+		public bool IsDarkMode { get; set; } = false;
+
+	}
+	
+}

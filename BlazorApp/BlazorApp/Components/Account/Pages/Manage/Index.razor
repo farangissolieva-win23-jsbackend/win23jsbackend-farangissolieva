@@ -1,0 +1,203 @@
+﻿@page "/Account/Manage"
+
+<PageTitle>Profile</PageTitle>
+
+<div class="container">
+	<section id="account-details">
+		<AsideProfile UserInfo="user" />
+
+		<div class="details">
+			<StatusMessage />
+
+			<section class="basic-info">
+				<EditForm method="post" FormName="userprofileform" Model="UserProfileForm" OnValidSubmit="ProfileOnValidSubmitAsync" asp-route-ReturnUrl="@ReturnUrl">
+					<DataAnnotationsValidator />
+					<h2>Account Details</h2>
+					<h5>Basic info</h5>
+
+					<div class="content">
+						<div id="form-firstname" class="input-group">
+							<label>First Name</label>
+							<InputText @bind-Value="UserProfileForm.FistName" />
+							<ValidationMessage For="() => UserProfileForm.FistName" />
+						</div>
+						<div id="form-lastname" class="input-group">
+							<label>Last Name</label>
+							<InputText @bind-Value="UserProfileForm.LastName" />
+							<ValidationMessage For="() => UserProfileForm.LastName" />
+						
+						</div>
+						<div id="form-email" class="input-group">
+							<label>Email</label>
+							<InputText @bind-Value="UserProfileForm.Email" />
+							<ValidationMessage For="() => UserProfileForm.Email" />
+						</div>
+						<div id="form-phone" class="input-group">
+							<label>Phone</label>
+							<InputText @bind-Value="UserProfileForm.Telephone" />
+							<ValidationMessage For="() => UserProfileForm.Telephone" />
+						</div>
+						<div id="form-bio" class="input-group">
+							<label>Bio <span>(optional)</span></label>
+							<InputTextArea @bind-Value="UserProfileForm.Biography" />
+						</div>
+						<div class="form-buttons">
+							<button class="btn-gray" type="reset">Cancel</button>
+							<button class="btn-theme" type="submit">Save changes</button>
+						</div>
+					</div>
+				</EditForm>
+
+			</section>
+			<hr />
+			<section class="address-info">
+				<EditForm method="post" Model="UserAddressForm" OnValidSubmit=" AddressOnValidSubmitAsync" asp-route-ReturnUrl="@ReturnUrl">
+					<DataAnnotationsValidator />
+					<h5>Address</h5>
+
+					<div class="content">
+						<div id="form-addressline_1" class="input-group">
+							<label>Addressline_1</label>
+							<InputText @bind-Value="UserAddressForm.AddressLine_1" />
+							<ValidationMessage For="() => UserAddressForm.AddressLine_1" />
+							
+						</div>
+						<div id="form-addressline_2" class="input-group">
+							<label>Addressline_2 <span>(optional)</span></label>
+							<InputText @bind-Value="UserAddressForm.AddressLine_2" />
+						</div>
+						<div id="form-postalcode" class="input-group">
+							<label>Postal Code</label>
+							<InputText @bind-Value="UserAddressForm.PostalCode" />
+							<ValidationMessage For="() => UserAddressForm.PostalCode" />
+						</div>
+						<div id="form-city" class="input-group">
+							<label>City</label>
+							<InputText @bind-Value="UserAddressForm.City" />
+							<ValidationMessage For="() => UserAddressForm.City" />
+						</div>
+						<div class="form-buttons">
+							<button class="btn-gray" type="reset">Cancel</button>
+							<button class="btn-theme" type="submit">Save changes</button>
+						</div>
+					</div>
+				</EditForm>
+			</section>
+		</div>
+	</section>
+
+</div>
+
+
+@code {
+	private ApplicationUser user = default!;
+
+	[SupplyParameterFromQuery]
+	private string? ReturnUrl { get; set; }
+
+	[SupplyParameterFromForm]
+	public ProfileModel UserProfileForm { get; set; } = new();
+
+	[SupplyParameterFromForm]
+	public AddressInfoModel UserAddressForm { get; set; } = new();
+
+	[CascadingParameter]
+	private HttpContext HttpContext { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+		
+		if (user != null && user.UserProfile != null)
+		{
+			UserProfileForm = new ProfileModel
+				{
+					Email = user.Email!,
+					FistName = user.UserProfile.FistName,
+					LastName = user.UserProfile.LastName,
+					ProfileImg = user.UserProfile.ProfileImg,
+					Biography = user.UserProfile.Biography,
+					Telephone = user.UserProfile.Telephone!
+				};
+		}
+		if (user != null && user.UserAddress != null)
+		{
+			UserAddressForm = new AddressInfoModel
+				{
+					AddressLine_1 = user.UserAddress.AddressLine_1,
+					AddressLine_2 = user.UserAddress.AddressLine_2,
+					PostalCode = user.UserAddress.PostalCode,
+					City = user.UserAddress.City
+				};
+		}
+	}
+
+	private async Task ProfileOnValidSubmitAsync()
+	{
+
+	}
+
+	private async Task AddressOnValidSubmitAsync()
+	{
+
+	}
+	
+	public class ProfileModel
+	{
+		[DataType(DataType.ImageUrl)]
+		public string? ProfileImg { get; set; }
+
+		[Display(Name = "First name", Prompt = "Enter your first name", Order = 0)]
+		[Required(ErrorMessage = "First name is required")]
+		[DataType(DataType.Text)]
+		public string FistName { get; set; } = null!;
+
+
+		[Display(Name = "Last name", Prompt = "Enter your last name", Order = 1)]
+		[Required(ErrorMessage = "Last name is required")]
+		[DataType(DataType.Text)]
+		public string LastName { get; set; } = null!;
+
+
+		[Display(Name = "Email address", Prompt = "Enter your email address", Order = 2)]
+		[Required(ErrorMessage = "Email address is required")]
+		[EmailAddress]
+		[RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email address")]
+		public string Email { get; set; } = null!;
+
+		[Display(Name = "Phone", Prompt = "Enter your phone", Order = 3)]
+		[Required(ErrorMessage = "Phone is required")]
+		[DataType(DataType.PhoneNumber)]
+		public string Telephone { get; set; } = null!;
+
+		[Display(Name = "Bio", Prompt = "Add a short bio...", Order = 4)]
+		[DataType(DataType.MultilineText)]
+		public string? Biography { get; set; }
+	
+	}
+
+	public class AddressInfoModel
+	{
+		[Display(Name = "Address line 1", Prompt = "Enter your address", Order = 0)]
+		[Required(ErrorMessage = "First name is required")]
+		[DataType(DataType.Text)]
+		public string AddressLine_1 { get; set; } = null!;
+
+
+		[Display(Name = "Address line 2", Prompt = "Enter your second address line", Order = 1)]
+		[DataType(DataType.Text)]
+		public string? AddressLine_2 { get; set; }
+
+		[Display(Name = "Postal code", Prompt = "Enter your postal code", Order = 2)]
+		[Required(ErrorMessage = "Postal code is required")]
+		[DataType(DataType.PostalCode)]
+		public string PostalCode { get; set; } = null!;
+
+
+		[Display(Name = "City", Prompt = "Enter your city", Order = 3)]
+		[Required(ErrorMessage = "City is required")]
+		public string City { get; set; } = null!;
+	}
+
+
+}

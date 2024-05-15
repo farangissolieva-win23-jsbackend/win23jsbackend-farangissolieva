@@ -1,0 +1,190 @@
+﻿#courses {
+    .container {
+
+        .heading {
+            padding-top: 20px;
+            padding-bottom: 20px;
+            display: block;
+
+            @include lg {
+                display: flex;
+                justify-content: space-between;
+                padding-top: 30px;
+            }
+
+            .tool-bar {
+                gap: 15px;
+                padding-top: 20px;
+
+                @include lg {
+                    padding-top: 0;
+                }
+
+                form {
+                    display: grid;
+                    grid-template-columns: 1fr;
+                   
+                    @include lg {
+                        display: flex;
+                        width: 100%;
+                    }
+
+                    .inputgroup {
+                        input {
+                            padding: 10px 10px 10px 15px;
+                            width: 100%;
+
+                            @include lg {
+                                width: 250px;
+                            }
+                        }
+
+                        i {
+                            right: 15px;
+                            color: var(--color-gray);
+                        }
+                    }
+
+                    select {
+                        padding: 15px 25px 15px 15px;
+                        width: 100%;
+
+                        @include lg {
+                            width: 250px;
+                        }
+                    }
+                }
+            }
+
+            h2 {
+                margin: 0;
+                padding: 0;
+            }
+        }
+
+        .content-contaier {
+            padding-top: 50px;
+            padding-bottom: 60px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem 0.5rem;
+
+            @include lg {
+                grid-template-columns: 1fr 1fr;
+                gap: 2.5rem 1.7rem;
+            }
+
+            @include xl {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            justify-content: center;
+            padding-bottom: 40px;
+        }
+
+        .page-item {
+            margin: 0 5px;
+        }
+
+        .page-link {
+            display: inline-block;
+            padding: 5px 12px;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .page-link:hover {
+            background-color: var(--color-gray-200);
+            color: var(--color-gray-800)
+        }
+
+        .page-item.disabled .page-link {
+            color: var(--color-gray-300);
+            background-color: var(--color-gray-200);
+            pointer-events: none;
+        }
+
+        .page-item.disabled .page-link:hover {
+        }
+
+        .page-item span {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            font-size: 1.5em;
+            line-height: 1em;
+            text-align: center;
+        }
+
+        .page-item:first-child span {
+            margin-right: 5px;
+        }
+
+        .page-item:last-child span {
+            margin-left: 5px;
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--color-theme);
+            color: var(--color-white);
+        }
+
+        .work-with-us {
+            border-radius: 6px;
+            padding-top: 40px;
+            background-color: var(--color-gray-200);
+            display: block;
+            justify-content: center;
+            align-content: center;
+            text-align: center;
+            padding: 20px;
+           
+
+            @include lg {
+                display: flex;
+                gap: 100px;
+                padding: 80px 60px 80px 100px;
+                text-align: left;
+            }
+
+            .banner-content {
+                display: block;
+                justify-content: center;
+                align-content: center;
+                padding: 20px;
+
+                @include lg {
+                    justify-content: left;
+                    align-content: left;
+                    padding-top: 50px;
+                    padding-left: 40px;
+                }
+
+                .btn-theme-s {
+                    display: inline-block;
+                }
+
+                h5 {
+                    font-weight: 400;
+                    color: var(--color-gray-700);
+                }
+
+                h1 {
+                    padding-bottom: 20px;
+                }
+
+                span {
+                    color: var(--color-theme);
+                }
+            }
+        }
+    }
+}

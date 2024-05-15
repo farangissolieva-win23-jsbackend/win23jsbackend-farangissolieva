@@ -1,0 +1,36 @@
+﻿<section class="integrate-tools">
+    <div class="container">
+        <h1>Integrate Top Work Tools</h1>
+        <p id="sub-title">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin volutpat mollis egestas. Nam luctus facilisis ultrices. Pellentesque volutpat ligula est. Mattis fermentum, at nec lacus.</p>
+        <div class="content">
+            @foreach (var tool in IntegrationTools)
+            {
+                <div class="tool">
+                    <img src="images/integrate-icon/@tool.Img" alt="@tool.Img">
+                    <p>@tool.Description</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    public class IntegrationToolsInfo
+    {
+        public string Description { get; set; } = null!;
+        public string Img { get; set; } = null!;
+    }
+
+    List<IntegrationToolsInfo> IntegrationTools = new List<IntegrationToolsInfo>()
+    {
+        new IntegrationToolsInfo {Description = "Lorem magnis pretium sed curabitur nunc facilisi nunc cursus sagittis.", Img ="google.svg" },
+        new IntegrationToolsInfo {Description = "In eget a mauris quis. Tortor dui tempus quis integer est sit natoque placerat dolor.", Img ="zoom.svg" },
+        new IntegrationToolsInfo {Description = "Id mollis consectetur congue egestas egestas suspendisse blandit justo.", Img ="slack.svg" },
+        new IntegrationToolsInfo {Description = "Rutrum interdum tortor, sed at nulla. A cursus bibendum elit purus cras praesent.", Img ="gmail.svg" },
+        new IntegrationToolsInfo {Description = "Congue pellentesque amet, viverra curabitur quam diam scelerisque fermentum urna.", Img ="trello.svg" },
+        new IntegrationToolsInfo {Description = "A elementum, imperdiet enim, pretium etiam facilisi in aenean quam mauris.", Img ="mailChimp.svg" },
+        new IntegrationToolsInfo {Description = "Ut in turpis consequat odio diam lectus elementum. Est faucibus blandit platea.", Img ="dropbox.svg" },
+        new IntegrationToolsInfo {Description = "Faucibus cursus maecenas lorem cursus nibh. Sociis sit risus id. Sit facilisis dolor arcu.", Img ="evernote.svg" },
+       
+    };
+}

@@ -1,0 +1,32 @@
+﻿.breadcrumb {
+    padding-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 70%;
+
+    @include lg {
+        width: 100%;
+    }
+
+    a {
+        font-size: 16px;
+        color: var(--color-gray-600);
+        text-decoration: none;
+        font-weight: 300;
+    }
+
+    i {
+        font-size: 12px;
+    }
+
+    .fa-house {
+        color: var(--color-gray-600);
+        padding-right: 5px;
+        font-size: 16px;
+    }
+
+    .active {
+        color: var(--color-theme);
+    }
+}

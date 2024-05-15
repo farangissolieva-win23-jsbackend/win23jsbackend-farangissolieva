@@ -1,0 +1,114 @@
+﻿.course-item {
+    @include shadow-l;
+    border-radius: 8px;
+   
+
+    @include lg {
+        width: 100%;
+    }
+
+    .image-container {
+        position: relative;
+
+        img {
+            border: none;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .btn-sell {
+            height: 40px;
+            width: 40px;
+            background-color: var(--color-white);
+            border: none;
+            position: absolute;
+            border-radius: 50%;
+            top: 15px;
+            right: 15px;
+            z-index: 2;
+
+            i {
+                font-size: 15px;
+            }
+
+            &:hover {
+                background-color: var(--color-theme);
+
+                i {
+                    color: var(--color-white);
+                }
+            }
+        }
+
+        .badge {
+            position: absolute;
+            top: 15px;
+            left: 13px;
+            z-index: 2;
+            background-color: var(--color-success-dark);
+            padding: 5px 12px;
+            font-size: 15px;
+            font-weight: 400;
+            color: var(--color-white);
+        }
+    }
+
+    .info {
+        padding: 20px;
+
+        .menu-link {
+            font-size: 22px;
+            font-weight: 900 !important;
+
+            &:hover {
+                color: var(--color-gray-800);
+            }
+        }
+
+        .price {
+            p {
+                font-size: 22px;
+                font-weight: 700;
+                color: var(--color-theme);
+            }
+
+            .red {
+                color: var(--color-danger-dark);
+            }
+
+            .gray {
+                display: inline-block;
+                color: var(--color-gray-600);
+                font-weight: 400;
+                font-size: 22px;
+                text-decoration: line-through;
+                padding-left: 7px;
+            }
+        }
+
+        .duration-rating {
+            display: flex;
+            gap: 25px;
+
+            .duration {
+
+                i {
+                    padding-right: 7px;
+                }
+            }
+
+            .rating {
+                p {
+                    margin: 0;
+                }
+
+                i {
+                    font-size: 20px;
+                }
+
+                display: flex;
+                gap: 7px;
+            }
+        }
+    }
+}

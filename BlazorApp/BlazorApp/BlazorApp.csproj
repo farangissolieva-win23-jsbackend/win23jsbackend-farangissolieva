@@ -1,0 +1,91 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-BlazorApp-fa4a4dad-9f09-4297-9482-65438a20a88c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="compilerconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="compilerconfig.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="compilerconfig.json" />
+    <None Include="Components\Pages\Courses.razor" />
+    <None Include="Components\Sections\DownloadApp.razor" />
+    <None Include="Components\Sections\Features.razor" />
+    <None Include="Components\Sections\Footer.razor" />
+    <None Include="Components\Sections\Header.razor" />
+    <None Include="Components\Sections\Integration.razor" />
+    <None Include="Components\Sections\Showcase.razor" />
+    <None Include="Components\Sections\SubscriptionSection.razor" />
+    <None Include="Components\Sections\Switch.razor" />
+    <None Include="Components\Sections\TaskMaster.razor" />
+    <None Include="wwwroot\images\404.svg" />
+    <None Include="wwwroot\images\authors\albert-flores-avatar.svg" />
+    <None Include="wwwroot\images\authors\albert-flores.svg" />
+    <None Include="wwwroot\images\brands\brand1.svg" />
+    <None Include="wwwroot\images\brands\brand2.svg" />
+    <None Include="wwwroot\images\brands\brand3.svg" />
+    <None Include="wwwroot\images\brands\brand4.svg" />
+    <None Include="wwwroot\images\courses\blender.svg" />
+    <None Include="wwwroot\images\courses\creative.svg" />
+    <None Include="wwwroot\images\courses\data.svg" />
+    <None Include="wwwroot\images\courses\front-end.svg" />
+    <None Include="wwwroot\images\courses\fullstack-web-developer.svg" />
+    <None Include="wwwroot\images\courses\html-css-javascript.svg" />
+    <None Include="wwwroot\images\courses\illustration.svg" />
+    <None Include="wwwroot\images\courses\ios.svg" />
+    <None Include="wwwroot\images\courses\learn.svg" />
+    <None Include="wwwroot\images\courses\ultimate.svg" />
+    <None Include="wwwroot\images\dark-mode.svg" />
+    <None Include="wwwroot\images\decorArrows.svg" />
+    <None Include="wwwroot\images\download\appstore.svg" />
+    <None Include="wwwroot\images\download\googleplay.svg" />
+    <None Include="wwwroot\images\download\screens.svg" />
+    <None Include="wwwroot\images\icons\analytic.svg" />
+    <None Include="wwwroot\images\icons\assignees.svg" />
+    <None Include="wwwroot\images\icons\chat.svg" />
+    <None Include="wwwroot\images\icons\notification.svg" />
+    <None Include="wwwroot\images\icons\sections.svg" />
+    <None Include="wwwroot\images\icons\security.svg" />
+    <None Include="wwwroot\images\icons\sequrity.svg" />
+    <None Include="wwwroot\images\integrate-icon\dropbox.svg" />
+    <None Include="wwwroot\images\integrate-icon\evernote.svg" />
+    <None Include="wwwroot\images\integrate-icon\gmail.svg" />
+    <None Include="wwwroot\images\integrate-icon\google.svg" />
+    <None Include="wwwroot\images\integrate-icon\mailChimp.svg" />
+    <None Include="wwwroot\images\integrate-icon\slack.svg" />
+    <None Include="wwwroot\images\integrate-icon\trello.svg" />
+    <None Include="wwwroot\images\integrate-icon\zoom.svg" />
+    <None Include="wwwroot\images\light-mode.svg" />
+    <None Include="wwwroot\images\mockup\MacBook Pro-dark.svg" />
+    <None Include="wwwroot\images\mockup\MacBook Pro-light.svg" />
+    <None Include="wwwroot\images\mockup\slider.svg" />
+    <None Include="wwwroot\images\selicon-icon.svg" />
+    <None Include="wwwroot\images\showcase-taskmaster.svg" />
+    <None Include="wwwroot\images\TaskMaster-dashboard.svg" />
+    <None Include="wwwroot\images\uploads\profiles\avatar.svg" />
+    <None Include="wwwroot\images\uploads\profiles\p_e2f8d359-bdc5-4a63-8bd4-bbfebc3fa482_c5674d36-27be-416f-91b6-52705c4bfeeb.svg" />
+    <None Include="wwwroot\images\uploads\profiles\userImg.svg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorApp.Client\BlazorApp.Client.csproj" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.17.5" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+</Project>

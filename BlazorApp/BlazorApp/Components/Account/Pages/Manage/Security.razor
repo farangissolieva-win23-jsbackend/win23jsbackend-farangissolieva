@@ -1,0 +1,155 @@
+﻿@page "/Account/Manage/Security"
+<div class="container">
+	<section id="account-security">
+		<AsideProfile UserInfo="user" />
+
+		<div class="details">
+			<StatusMessage />
+
+			<section class="password-info">
+				<EditForm method="post" Model="SecurityForm" FormName="securityform" OnValidSubmit="PasswordOnValidSubmitAsync" asp-route-ReturnUrl="@ReturnUrl" novalidate>
+					<DataAnnotationsValidator />
+					<h2>Security</h2>
+					<h5>Password</h5>
+
+					<div class="content">
+						<div id="current-password" class="input-group">
+							<label >Current Password</label>
+							<ValidationMessage For="() => SecurityForm.CurrentPassword" />
+							<InputText @bind-Value="SecurityForm.CurrentPassword" type="password"/>
+						</div>
+						<div id="new-password" class="input-group">
+							<label>Password</label>
+							<ValidationMessage For="() => SecurityForm.Password" />
+							<InputText @bind-Value="SecurityForm.Password" type="password" />
+						</div>
+						<div id="confirm-password" class="input-group">
+							<label>Confirm Password</label>
+							<ValidationMessage For="() => SecurityForm.ConfirmPassword" />
+							<InputText @bind-Value="SecurityForm.ConfirmPassword" type="password" />
+						</div>
+
+						<div class="form-buttons">
+							<button class="btn-gray" type="reset">Cancel</button>
+							<button class="btn-theme" type="submit">Save password</button>
+						</div>
+					</div>
+				</EditForm>
+
+			</section>
+			<hr />
+			<section class="delete-account">
+				<EditForm method="post" FormName="deleteform" Model="DeleteForm" OnValidSubmit="OnValidSubmitAsync" novalidate>
+					<DataAnnotationsValidator />
+					<h5>Delete account</h5>
+					<div class="content">
+						<p>When you delete your account, your public profile will be deactivated immediately. If you change your mind before the 14 days are up, sign in with your email and password, and we’ll send you a link to reactivate your account.</p>
+
+						<div id="form-terms" class="checkbox">
+							<div class="checkbox-group">
+								<div class="input-group">
+									<InputCheckbox @bind-Value ="DeleteForm.DeleteAccount" />
+									<label>Yes, I want to delete my account.</label>
+								</div>
+							</div>
+							<ValidationMessage For="() => DeleteForm.DeleteAccount" />
+						</div>
+						<div class="form-button">
+							<button class="btn-red" type="submit" disabled="@(!DeleteForm.DeleteAccount)">Delete</button>
+						</div>
+					</div>
+				</EditForm>
+			</section>
+		</div>
+	</section>
+</div>
+
+@code {
+	private string? message;
+
+	[SupplyParameterFromQuery]
+	private string? ReturnUrl { get; set; }
+
+	[SupplyParameterFromForm]
+	public SecurityFormModel SecurityForm { get; set; } = new();
+
+	public DeleteFormModel DeleteForm { get; set; } = new();
+
+	private ApplicationUser user = default!;
+
+	[CascadingParameter]
+	private HttpContext HttpContext { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+	}
+
+	private async Task OnValidSubmitAsync()
+	{
+		var result = await UserManager.DeleteAsync(user);
+		if (!result.Succeeded)
+		{
+			message = "Error: Unexpected error occurred deleting user.";
+		}
+
+		await SignInManager.SignOutAsync();
+
+		var userId = await UserManager.GetUserIdAsync(user);
+		Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
+
+		RedirectManager.RedirectToCurrentPage();
+	}
+
+	private async Task PasswordOnValidSubmitAsync()
+	{
+		if(user.UserName != null)
+		{
+			// send verification code
+			var client = new ServiceBusClient("Endpoint=sb://servicebus-silicon.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Iho2H8jesOGDJYWEU/BAOI3nW+PQDk8yU+ASbMRVmUw=");
+			var sender = client.CreateSender("verification_request");
+			var jsonData = JsonConvert.SerializeObject(new { Email = user.UserName });
+			var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(jsonData)) { ContentType = "application/json" };
+
+			await sender.SendMessageAsync(message);
+			await sender.DisposeAsync();
+			await client.DisposeAsync();
+			///////////////////////////////////
+			NavigationManager.NavigateTo($"/Account/ResetPassword?returnUrl=/Account/Manage/Security");
+		}
+		var result = await UserManager.ResetPasswordAsync(user, SecurityForm.CurrentPassword, SecurityForm.Password);
+		if (result.Succeeded)
+		{
+			message = "Your password has been changed successfully.";
+		}
+		else
+		{
+			message = "Error: Failed to change password.";
+		}
+	}
+
+	public class SecurityFormModel
+	{
+		[Required(ErrorMessage = "Current password is required")]
+		[DataType(DataType.Password)]
+		public string CurrentPassword { get; set; } = null!;
+
+
+		[Required(ErrorMessage = "New password is required")]
+		[DataType(DataType.Password)]
+		[RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_\-+=])[A-Za-z\d!@#$%^&*()_\-+=]{8,}$", ErrorMessage = "Invalid password")]
+		public string Password { get; set; } = null!;
+
+		[Required(ErrorMessage = "Confirm new password")]
+		[DataType(DataType.Password)]
+		[Compare(nameof(Password), ErrorMessage = "Password does not match")]
+		public string ConfirmPassword { get; set; } = null!;
+
+	}
+
+	public class DeleteFormModel
+	{
+		[Display(Name = "Yes, I want to delete my account.", Order = 3)]
+		public bool DeleteAccount { get; set; } = false;
+	}
+}
