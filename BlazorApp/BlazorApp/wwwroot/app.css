@@ -2936,3 +2936,27 @@ footer .container .copyright span {
   align-items: center;
   width: 70%;
 }
+
+.forgotPassword .container {
+  display: grid;
+  gap: 1rem 2rem;
+  grid-template-columns: 1fr;
+  justify-content: center;
+  align-items: center;
+  width: 60%;
+}
+@media (min-width: 992px) {
+  .forgotPassword .container {
+    width: 60%;
+  }
+}
+@media (min-width: 1200px) {
+  .forgotPassword .container {
+    width: 50%;
+  }
+}
+@media (min-width: 1400px) {
+  .forgotPassword .container {
+    width: 35%;
+  }
+}

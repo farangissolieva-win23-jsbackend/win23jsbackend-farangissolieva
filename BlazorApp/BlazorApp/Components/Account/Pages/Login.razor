@@ -12,7 +12,7 @@
 
         <EditForm method="post" Model="SignInForm" FormName="signin" OnValidSubmit="LoginUser" asp-route-ReturnUrl="@ReturnUrl" novalidate>
             <DataAnnotationsValidator />
-            @if (string.IsNullOrEmpty(MessageText))
+            @if (!string.IsNullOrEmpty(MessageText))
             {
                 <StatusMessageAlert MessageText="@MessageText" MessageType="@MessageType" />
             }
@@ -63,9 +63,9 @@
     private string? ReturnUrl { get; set; }
 
     [SupplyParameterFromQuery]
-    public string MessageType { get; set; } = "";
+    public string? MessageType { get; set; }
     [SupplyParameterFromQuery]
-    public string MessageText { get; set; } = "";
+    public string? MessageText { get; set; }
 
     [SupplyParameterFromForm]
     public SignInFormModel SignInForm { get; set; } = new();

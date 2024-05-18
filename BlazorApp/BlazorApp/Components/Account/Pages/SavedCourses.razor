@@ -1,0 +1,25 @@
+﻿@page "/Account/Manage/SavedCourses"
+
+<div class="container">
+	<section id="saved-courses">
+
+		<partial name="_AsideProfile.cshtml" />
+
+		<div class="details">
+			<div class="title-bar">
+				<h2>Saved items</h2>
+				<form asp-controller="Account" asp-action="DeleteAllCourses" method="post">
+					<button type="submit" class="btn-gray">
+						<i class="fa-sharp fa-regular fa-trash"></i> Delete all
+					</button>
+				</form>
+			</div>
+			<partial name="~/Views/Shared/Sections/_StatusMessage.cshtml" />
+			<section class="content-contaier">
+				
+			</section>
+		</div>
+
+
+	</section>
+</div>

@@ -1,8 +1,9 @@
 ﻿@inject NavigationManager NavManager
+
 <aside>
     <div class="profile-info">
         <div class="profile-img">
-            @if (ProfileImg == null)
+            @if (string.IsNullOrEmpty(ProfileImg))
             {
                 <img src="images/uploads/profiles/avatar.svg" alt="@($"{FirstName} {LastName}")" />
             }
@@ -10,8 +11,8 @@
             {
                 <img src="images/uploads/profiles/@ProfileImg" alt="@($"{FirstName} {LastName}")" />
             }
-            <InputFile id="fileUploader" OnChange="HandleFileUpload" style="display: none"/>
-           <label for="fileUploader" class="button-circle"><i class="fa-regular fa-refresh"></i> </label>
+            <InputFile id="fileUploader" OnChange="HandleFileUpload" style="display: none" />
+            <label for="fileUploader" class="button-circle"><i class="fa-regular fa-refresh"></i> </label>
         </div>
 
         <h5>@($"{FirstName} {LastName}")</h5>
@@ -19,33 +20,34 @@
     </div>
 
     <nav>
-        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/Index") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Index">
+        
+        <NavLink class="@(IsActive("Account/Manage/Index") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Index">
             <i class="fa-regular fa-gear"></i> <span>Account Details</span>
         </NavLink>
-        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/Security") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Security">
+        <NavLink class="@(IsActive("Account/Manage/Security") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Security">
             <i class="fa-regular fa-lock"></i> <span>Security</span>
         </NavLink>
-        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/Notification") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Notification">
+        <NavLink class="@(IsActive("Account/Manage/Notification") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Notification">
             <i class="fa-regular fa-bell"></i> <span>Notification</span>
         </NavLink>
-       
-        <NavLink class="@(NavManager.Uri.Contains("Account/Manage/SavedCourses") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/SavedCourses">
+        <NavLink class="@(IsActive("Account/Manage/SavedCourses") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/SavedCourses">
             <i class="fa-regular fa-bookmark"></i> <span>Saved Courses</span>
         </NavLink>
-        <NavLink class="btn-transparent" href="Auth/SignOut"><i class="fa-regular fa-right-from-bracket"></i> <span>Sign Out</span></NavLink>
+        <NavLink class="btn-transparent" href="Auth/SignOut">
+            <i class="fa-regular fa-right-from-bracket"></i> <span>Sign Out</span>
+        </NavLink>
     </nav>
 </aside>
 
-
 @code {
     [Parameter]
-    public ApplicationUser UserInfo { get; set; } 
+    public ApplicationUser UserInfo { get; set; }
 
-    public string Email => UserInfo?.Email ?? null!;
-    public string FirstName => UserInfo?.UserProfile?.FistName ?? null!;
-    public string LastName => UserInfo?.UserProfile?.LastName ?? null!;
-    public string ProfileImg => UserInfo?.UserProfile?.ProfileImg ?? null!;
-    
+    public string Email => UserInfo?.Email ?? string.Empty;
+    public string FirstName => UserInfo?.UserProfile?.FistName ?? string.Empty;
+    public string LastName => UserInfo?.UserProfile?.LastName ?? string.Empty;
+    public string ProfileImg => UserInfo?.UserProfile?.ProfileImg ?? string.Empty;
+
     private IBrowserFile file;
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
@@ -71,4 +73,8 @@
         }
     }
 
+    private bool IsActive(string urlSegment)
+    {
+        return NavManager.Uri.Contains(urlSegment, StringComparison.OrdinalIgnoreCase);
+    }
 }

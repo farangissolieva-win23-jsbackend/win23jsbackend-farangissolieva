@@ -1,12 +1,264 @@
 ﻿@page "/courses"
-@inject HttpClient httpClient
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
+@using BlazorApp.Models
+
+@attribute [Authorize]
 @attribute [StreamRendering]
 
 
-<h1>Courses</h1>
+<section id="courses">
+	<div class="container">
+				
+		<div class="heading">
+			<h2 class="title">Courses</h2>
+			<div class="tool-bar">
+				<form id="categoryForm" method="get">
+					<div class="inputgroup">
+						<select id="categories" @* @bind="SelectedCategoryId" *@ @onchange="OnCategoryChange">
+							<option value="">All Categories</option>
+							@if (categories != null)
+							{
+								@foreach (var category in categories)
+								{
+									<option value="@category.Id">@category.Name</option>
+								}
+							}
+						</select>
+						<i class="fa-regular fa-chevron-down"></i>
+					</div>
+
+					<div class="inputgroup">
+						<input type="text" id="searchInput" name="searchQuery" placeholder="Search courses..." @bind="SearchQuery">
+						<i class="fa-regular fa-magnifying-glass"></i>
+					</div>
+				</form>
+			</div>
+		</div>
+		@if (!string.IsNullOrEmpty(MessageText))
+		{
+			<StatusMessageAlert MessageText="@MessageText" MessageType="@MessageType" />
+		}
+		<div class="content-contaier">
+			@if (courses == null)
+			{
+				<p><em>No courses founded yet. Please wait...</em></p>
+			} else
+			{
+				@foreach (var course in courses)
+				{
+					<div class="course-item">
+						<div class="image-container">
+							<img src="@course.ImgUrl" />
+
+							@if (IsInAccountManageSection())
+							{
+								<!-- Delete course button -->
+								<form asp-controller="Account" asp-action="DeleteCourse" method="post">
+									<input asp-for="@course.Id" name="id" type="hidden" value="@course.Id" />
+									<button class="btn-sell" type="submit"><i class="fa-solid fa-bookmark"></i></button>
+								</form>
+							}
+							else
+							{
+								<!-- Add course button -->
+								<form asp-controller="Courses" asp-action="Join" method="post">
+									<input asp-for="@course.Id" name="id" type="hidden" value="@course.Id" />
+									<button class="btn-sell" type="submit"><i class="fa-regular fa-bookmark"></i></button>
+								</form>
+							}
 
 
+							@if (course.IsBestseller == true)
+							{
+								<div class="badge">Best Seller</div>
+							}
+						</div>
+
+						<div class="info">
+							<a class="menu-link" href="@($"courses/course/{course.Id}")">@course.Title</a>
+							<p>By @course.AuthorName</p>
+							<div class="price">
+								@if (course.Discount == 0)
+								{
+									<p>$@course.Price</p>
+								}
+								else
+								{
+									<p><span class="red">$@course.Discount</span> <span class="gray">$@course.Price</span></p>
+								}
+
+							</div>
+
+							<hr />
+							<div class="duration-rating">
+								<div class="duration"><i class="fa-regular fa-clock"></i> @course.Hours</div>
+								<div class="rating">
+									<i class="fa-sharp fa-light fa-thumbs-up"></i>
+									<p>94%</p>
+									<p>@course.Reviews</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
+				
+
+			}	
+			
+		</div>
+	</div>
+</section>
 
 @code {
-	
+	[SupplyParameterFromQuery]
+	public string? MessageType { get; set; }
+	[SupplyParameterFromQuery]
+	public string? MessageText { get; set; }
+
+	[SupplyParameterFromQuery]
+	public string? ReturnUrl { get; set; }
+
+	private List<Category>? categories { get; set; }
+	public string? SearchQuery { get; set; }
+	public int? SelectedCategoryId { get; set; }
+
+	private List<CourseModel>? courses;
+	private List<CourseModel>? allCourses = new List<CourseModel>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await LoadCoursesAsync();
+		await LoadCategoriesAsync();
+
+	}
+
+	private async Task LoadCoursesAsync()
+	{
+		try
+		{
+			var query = new GraphQLQuery
+				{
+					Query = "{ getCourses { id title likes likePercentage isBestseller imgUrl authors{authorName} prices{price discount} categoryEntity{id name} hours reviews } }"
+				};
+			var response = await Http.PostAsJsonAsync("https://courseprovidersilicon.azurewebsites.net/api/GraphQL", query);
+			if (response.IsSuccessStatusCode)
+			{
+				var jsonResponse = await response.Content.ReadAsStringAsync();
+				var result = System.Text.Json.JsonSerializer.Deserialize<DynamicGraphQLResponse>(jsonResponse);
+				allCourses = result?.Data.GetProperty("getCourses").EnumerateArray()
+					.Select(course => new CourseModel
+						{
+							Id = course.GetProperty("id").GetString()!,
+							Title = course.GetProperty("title").GetString(),
+							Likes = course.GetProperty("likes").GetString(),
+							LikePercentage = course.GetProperty("likePercentage").GetString(),
+							IsBestseller = course.GetProperty("isBestseller").GetBoolean(),
+							ImgUrl = course.GetProperty("imgUrl").GetString(),
+							AuthorName = course.GetProperty("authors").EnumerateArray().First().GetProperty("authorName").GetString()!,
+							Price = course.GetProperty("prices").GetProperty("price").GetDecimal(),
+							Discount = course.GetProperty("prices").GetProperty("discount").GetDecimal(),
+							Hours = course.GetProperty("hours").GetString(),
+							Reviews = course.GetProperty("reviews").GetString(),
+							Category = new Category
+							{
+								Id = course.GetProperty("categoryEntity").GetProperty("id").GetInt32(),
+								Name = course.GetProperty("categoryEntity").GetProperty("name").GetString()!
+							}
+
+					})
+					.ToList() ?? new List<CourseModel>();
+				courses = new List<CourseModel>(allCourses!);
+			}
+
+		}
+		catch (Exception ex)
+		{
+
+			MessageText = $"Something went wrong. Try again!";
+			MessageType = "error";
+			Console.WriteLine(ex);
+		}
+	}
+
+	private async Task LoadCategoriesAsync()
+	{
+		try
+		{
+			var categoriesQuery = new GraphQLQuery
+				{
+					Query = "{ getCourses { categoryEntity { id name } } }"
+				};
+			var response = await Http.PostAsJsonAsync("https://courseprovidersilicon.azurewebsites.net/api/GraphQL", categoriesQuery);
+			if (response.IsSuccessStatusCode)
+			{
+				var jsonResponse = await response.Content.ReadAsStringAsync();
+				var result = System.Text.Json.JsonSerializer.Deserialize<DynamicGraphQLResponse>(jsonResponse);
+
+				var categoryArray = result!.Data.GetProperty("getCourses").EnumerateArray()
+					.Select(course => new Category
+						{
+							Id = course.GetProperty("categoryEntity").GetProperty("id").GetInt32(),
+							Name = course.GetProperty("categoryEntity").GetProperty("name").GetString()!
+						})
+					.ToList() ?? new List<Category>();
+
+				categories = categoryArray
+					.GroupBy(c => c.Id)
+					.Select(g => g.First())
+					.ToList();
+			}
+		}
+		catch (Exception ex)
+		{
+			MessageText = $"Something went wrong while loading categories. Try again! {ex}";
+			MessageType = "error";
+		}
+	}
+
+	public void OnCategoryChange(ChangeEventArgs e)
+	{
+		SelectedCategoryId = int.Parse(e.Value?.ToString() ?? "0");
+
+		if (SelectedCategoryId.HasValue && SelectedCategoryId != 0)
+		{
+			courses = allCourses?.Where(course => course.Category?.Id == SelectedCategoryId).ToList();
+		}
+		else
+		{
+			courses = new List<CourseModel>(allCourses!);
+		}
+	}
+
+	private bool IsInAccountManageSection()
+	{
+		return NavigationManager.Uri.Contains("account/manage", StringComparison.OrdinalIgnoreCase);
+	}
+
+	public class CourseModel
+	{
+		public string Id { get; set; } = null!;
+		public string? ImgUrl { get; set; }
+		public bool IsBestseller { get; set; }
+		public string? Title { get; set; }
+		public string? Ingress { get; set; }
+		public string? Reviews { get; set; }
+		public string? Likes { get; set; }
+		public string? LikePercentage { get; set; }
+		public string? Hours { get; set; }
+		public string AuthorName { get; set; } = null!;
+		public decimal Price { get; set; }
+		public decimal Discount { get; set; }
+		public Category? Category { get; set; }
+	}
+
+	public class Category
+	{
+		public int Id { get; set; }
+		public string? Name { get; set; }
+
+
+	}
+
+
 }

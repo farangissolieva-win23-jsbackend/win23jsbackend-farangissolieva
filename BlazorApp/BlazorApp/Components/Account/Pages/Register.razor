@@ -1,4 +1,5 @@
 ﻿@page "/Account/Register"
+@using BlazorApp.Filters
 
 @rendermode InteractiveServer
 
@@ -8,7 +9,8 @@
     <div class="container">
         <EditForm method="post" FormName="signupform" Model="SignupForm" OnValidSubmit="OnValidSubmit" asp-route-returnUrl="@ReturnUrl" novalidate>
             <DataAnnotationsValidator />
-            @if (string.IsNullOrEmpty(MessageText))
+            <AntiforgeryToken/>
+            @if (!string.IsNullOrEmpty(MessageText))
             {
                 <StatusMessageAlert MessageText="@MessageText" MessageType="@MessageType" />
             }
@@ -62,9 +64,9 @@
 
 @code {
     [SupplyParameterFromQuery]
-    public string MessageType { get; set; } = "";
+    public string? MessageType { get; set; }
     [SupplyParameterFromQuery]
-    public string MessageText { get; set; } = "";
+    public string? MessageText { get; set; }
 
     [SupplyParameterFromQuery]
     public string? ReturnUrl { get; set; }
@@ -164,8 +166,8 @@
         [Compare(nameof(Password), ErrorMessage = "Password does not match")]
         public string ConfirmPassword { get; set; } = null!;
 
-        // [Required(ErrorMessage = "You must agree with terms & conditions")]
-        public bool TermsAndCondition { get; set; } = false;
+        [CheckBoxRequired(ErrorMessage = "You must agree with terms & conditions")]
+        public bool TermsAndCondition { get; set; } 
 
     }
 

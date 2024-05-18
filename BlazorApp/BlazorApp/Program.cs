@@ -39,6 +39,16 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 	.AddSignInManager()
 	.AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(x =>
+{
+	x.Cookie.HttpOnly = true;
+	x.LoginPath = "/login";
+	x.LogoutPath = "/signout";
+	x.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+	x.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+	x.SlidingExpiration = true;
+});
+
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
 var app = builder.Build();
@@ -65,8 +75,5 @@ app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode()
 	.AddInteractiveWebAssemblyRenderMode()
 	.AddAdditionalAssemblies(typeof(BlazorApp.Client._Imports).Assembly);
-
-// Add additional endpoints required by the Identity /Account Razor components.
-app.MapAdditionalIdentityEndpoints();
 
 app.Run();
