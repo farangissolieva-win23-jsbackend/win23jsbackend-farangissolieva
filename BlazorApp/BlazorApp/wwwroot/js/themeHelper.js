@@ -25,14 +25,12 @@ window.applySavedTheme = function () {
 };
 
 window.applyThemeOnNavigation = function () {
-    console.log("Navigation event listener added");
-    setInterval(function () {
+       setInterval(function () {
         if (window.location.href !== sessionStorage.getItem('previousUrl')) {
-            console.log("Navigation event occurred");
             applySavedTheme();
             sessionStorage.setItem('previousUrl', window.location.href);
         }
-    }, 400); 
+    }, 500); 
 };
 document.addEventListener('DOMContentLoaded', function () {
     window.applySavedTheme();

@@ -1,8 +1,4 @@
-﻿@page "/myChat"
-@rendermode InteractiveAuto
-
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
+﻿@rendermode InteractiveAuto
 @using System.Security.Claims
 @using Microsoft.AspNetCore.SignalR.Client
 @inject HttpClient Http
@@ -93,8 +89,11 @@ else
 
     private async Task Send()
     {
+        Console.WriteLine("working");
+        
         if (!string.IsNullOrEmpty(currentMessage))
         {
+            Console.WriteLine("working");
             var message = new ChatMessage
                 {
                     UserName = userName!,
@@ -191,6 +190,7 @@ else
                      ProfileImgUrl = senderUserProfileImgUrl,
                      Timestamp = senderUserTimestamp
                  });
+             Console.WriteLine($"Message received from {senderUserName}: {senderUserMessage}");
              InvokeAsync(StateHasChanged);
          });
 
@@ -198,6 +198,8 @@ else
         await LoadUsersAsync(); 
       
     }
+
+    
 
     private async Task LoadUsersAsync()
     {
@@ -239,5 +241,7 @@ else
         public string? ProfileImgUrl { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.Now;
     }
+
+    
 }
 

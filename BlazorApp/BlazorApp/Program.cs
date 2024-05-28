@@ -1,4 +1,5 @@
 using Azure.Messaging.ServiceBus;
+using BlazorApp.Client.Pages;
 using BlazorApp.Components;
 using BlazorApp.Components.Account;
 using BlazorApp.Data;
@@ -11,6 +12,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -86,14 +90,22 @@ else
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
-app.UseAntiforgery();
 
-app.MapHub<ChatHub>("/chathub");
+
+app.UseRouting(); 
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseAntiforgery();
+app.MapHub<ChatHub>("/chathub"); 
 
 
 app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode()
 	.AddInteractiveWebAssemblyRenderMode()
 	.AddAdditionalAssemblies(typeof(BlazorApp.Client._Imports).Assembly);
+
+
 
 app.Run();
