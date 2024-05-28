@@ -1,0 +1,245 @@
+﻿.chat-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+
+    @include lg {
+        display: grid;
+        grid-template-columns: 2fr 5fr;
+        gap: 10px;
+    }
+
+    .details {
+        margin-top: 0;
+
+        @include lg {
+            margin-top: 50px;
+        }
+
+        width: 100%;
+
+
+        .password-info {
+            .chat-container {
+                border: 1px solid var(--color-gray-300);
+                border-radius: 8px;
+                @include shadow-m;
+                display: grid;
+                grid-template-columns: 1fr;
+
+                @include lg {
+                    display: grid;
+                    grid-template-columns: 2fr 5fr;
+                }
+
+                .user-list {
+                    background-color: var(--color-gray-100);
+
+                    h2 {
+                        padding-left: 15px;
+                    }
+
+                    ul {
+                        list-style-type: none;
+                    }
+
+                    li {
+                        display: flex;
+                        justify-content: left;
+                        align-items: center;
+                        padding-top: 20px;
+                    }
+
+                    span {
+                        @include h6;
+                    }
+
+                    img {
+                        width: 50px;
+                        height: 50px;
+                        padding-right: 10px;
+                    }
+                }
+
+                .chat-window {
+                    padding: 10px;
+                    height: 550px;
+                    overflow-y: scroll;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+
+                    .chat-header {
+                        flex: none;
+                        padding: 10px;
+                    }
+
+                    hr {
+                        margin: 0;
+                        padding-bottom: 8px;
+                    }
+
+                    .chat-messages {
+                        flex: 1;
+                        overflow-y: auto;
+
+                        .message {
+                            display: flex;
+                            align-items: center;
+                            margin-bottom: 10px;
+                            padding: 5px 10px;
+                            border-radius: 10px;
+                            max-width: 60%;
+
+                            &.message-left {
+                                align-self: flex-end;
+                                background-color: var(--color-theme);
+                                color: var(--color-white);
+                                margin-left: auto;
+                            }
+
+                            &.message-right {
+                                align-self: flex-start;
+                                color: var(--color-black);
+                                background-color: var(--color-gray-100);
+                                margin-right: auto;
+                            }
+
+                            .message-content {
+                                display: flex;
+                                flex-direction: column;
+                            }
+
+                            .username {
+                                font-weight: bold;
+                                margin-right: 5px;
+                            }
+
+                            .text {
+                                margin-right: 10px;
+                            }
+
+                            .timestamp {
+                                font-size: smaller;
+                                color: var(--color-gray);
+                                align-self: flex-end;
+                            }
+                        }
+
+                        img {
+                            width: 50px;
+                            height: 50px;
+                            padding-right: 10px;
+                        }
+                    }
+
+                    .typing-indicator {
+                        flex: none;
+                        font-style: italic;
+                        color: var(--color-gray);
+                        padding: 5px 10px;
+                    }
+
+                    .input-group {
+                        flex: none;
+                        padding: 10px;
+                        display: flex;
+                        align-items: center;
+
+                        .form-control {
+                            flex: 1;
+                            margin-right: 10px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
+
+/*.chat-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+
+    @include lg {
+        display: grid;
+        grid-template-columns: 2fr 5fr;
+        gap: 150px;
+    }
+
+    .details {
+        margin-top: 0;
+
+        @include lg {
+            margin-top: 50px;
+        }
+
+        width: 100%;
+
+
+        .password-info {
+             .chat-window {
+                border: 1px solid var(--color-gray-200);
+                padding: 10px;
+                height: 400px;
+                overflow-y: scroll;
+                margin-bottom: 15px;
+                display: flex;
+                flex-direction: column;
+
+                .message {
+                    display: flex;
+                    flex-direction: column;
+                    margin-bottom: 10px;
+                    padding: 5px 10px;
+                    border-radius: 10px;
+                    max-width: 60%;
+
+                    &.message-left {
+                        align-self: flex-start;
+                        background-color: var(--color-gray-200);
+                        color: var(--color-black);
+                    }
+
+                    &.message-right {
+                        align-self: flex-end;
+                        background-color: var(--color-theme);
+                        color: var(--color-white);
+                    }
+
+                    .username {
+                        font-weight: bold;
+                        margin-right: 5px;
+                    }
+
+                    .text {
+                        margin-right: 10px;
+                    }
+
+                    .timestamp {
+                        font-size: smaller;
+                        color: var(--color-gray);
+                        align-self: flex-end;
+                    }
+                }
+            }
+
+
+
+            .typing-indicator {
+                font-style: italic;
+                color: var(--color-gray);
+                margin-bottom: 10px;
+            }
+        }
+    }
+}
+*/

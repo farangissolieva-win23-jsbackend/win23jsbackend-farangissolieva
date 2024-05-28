@@ -1,12 +1,16 @@
 ﻿@page "/Account/Manage/Security"
+
 <div class="container">
 	<section id="account-security">
 		<AsideProfile UserInfo="user" />
 
 		<div class="details">
-			<StatusMessage />
+			@if (!string.IsNullOrEmpty(MessageText))
+			{
+				<StatusMessageAlert MessageText="@MessageText" MessageType="@MessageType" />
+			}
+				<section class="password-info">
 
-			<section class="password-info">
 				<EditForm method="post" Model="SecurityForm" FormName="securityform" OnValidSubmit="PasswordOnValidSubmitAsync" asp-route-ReturnUrl="@ReturnUrl" novalidate>
 					<DataAnnotationsValidator />
 					<h2>Security</h2>
@@ -14,9 +18,9 @@
 
 					<div class="content">
 						<div id="current-password" class="input-group">
-							<label >Current Password</label>
+							<label>Current Password</label>
 							<ValidationMessage For="() => SecurityForm.CurrentPassword" />
-							<InputText @bind-Value="SecurityForm.CurrentPassword" type="password"/>
+							<InputText @bind-Value="SecurityForm.CurrentPassword" type="password" />
 						</div>
 						<div id="new-password" class="input-group">
 							<label>Password</label>
@@ -35,45 +39,47 @@
 						</div>
 					</div>
 				</EditForm>
+				</section>
+				<hr />
+				<section class="delete-account">
+					<EditForm method="post" FormName="deleteform" Model="DeleteForm" OnValidSubmit="DeleteOnValidSubmitAsync" novalidate>
+						<h5>Delete account</h5>
+						<div class="content">
+							<p>When you delete your account, your public profile will be deactivated immediately. If you change your mind before the 14 days are up, sign in with your email and password, and we’ll send you a link to reactivate your account.</p>
 
-			</section>
-			<hr />
-			<section class="delete-account">
-				<EditForm method="post" FormName="deleteform" Model="DeleteForm" OnValidSubmit="OnValidSubmitAsync" novalidate>
-					<DataAnnotationsValidator />
-					<h5>Delete account</h5>
-					<div class="content">
-						<p>When you delete your account, your public profile will be deactivated immediately. If you change your mind before the 14 days are up, sign in with your email and password, and we’ll send you a link to reactivate your account.</p>
-
-						<div id="form-terms" class="checkbox">
-							<div class="checkbox-group">
-								<div class="input-group">
-									<InputCheckbox @bind-Value ="DeleteForm.DeleteAccount" />
-									<label>Yes, I want to delete my account.</label>
+							<div id="form-terms" class="checkbox">
+								<div class="checkbox-group">
+									<div class="input-group">
+									<InputCheckbox @bind-Value="DeleteForm.Delete" />
+										<label>Yes, I want to delete my account.</label>
+									</div>
 								</div>
+							<ValidationMessage For="() => DeleteForm.Delete" />
 							</div>
-							<ValidationMessage For="() => DeleteForm.DeleteAccount" />
+							<div class="form-button">
+								<button class="btn-red" type="submit">Delete</button>
+							</div>
 						</div>
-						<div class="form-button">
-							<button class="btn-red" type="submit" disabled="@(!DeleteForm.DeleteAccount)">Delete</button>
-						</div>
-					</div>
-				</EditForm>
-			</section>
+					</EditForm>
+				</section>
+			
 		</div>
 	</section>
 </div>
 
 @code {
-	private string? message;
+	[SupplyParameterFromQuery]
+	public string? MessageType { get; set; }
+	[SupplyParameterFromQuery]
+	public string? MessageText { get; set; }
 
 	[SupplyParameterFromQuery]
 	private string? ReturnUrl { get; set; }
 
 	[SupplyParameterFromForm]
-	public SecurityFormModel SecurityForm { get; set; } = new();
-
-	public DeleteFormModel DeleteForm { get; set; } = new();
+	public SecurityFormModel SecurityForm { get; set; } = new SecurityFormModel();
+	[SupplyParameterFromForm]
+	public DeleteAccount DeleteForm { get; set; } = new DeleteAccount();
 
 	private ApplicationUser user = default!;
 
@@ -85,48 +91,73 @@
 		user = await UserAccessor.GetRequiredUserAsync(HttpContext);
 	}
 
-	private async Task OnValidSubmitAsync()
-	{
-		var result = await UserManager.DeleteAsync(user);
-		if (!result.Succeeded)
-		{
-			message = "Error: Unexpected error occurred deleting user.";
-		}
-
-		await SignInManager.SignOutAsync();
-
-		var userId = await UserManager.GetUserIdAsync(user);
-		Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
-
-		RedirectManager.RedirectToCurrentPage();
-	}
-
 	private async Task PasswordOnValidSubmitAsync()
 	{
-		if(user.UserName != null)
+		if (user.UserName != null && SecurityForm.CurrentPassword != null && SecurityForm.Password != null)
 		{
-			// send verification code
-			var client = new ServiceBusClient("Endpoint=sb://servicebus-silicon.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Iho2H8jesOGDJYWEU/BAOI3nW+PQDk8yU+ASbMRVmUw=");
-			var sender = client.CreateSender("verification_request");
-			var jsonData = JsonConvert.SerializeObject(new { Email = user.UserName });
-			var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(jsonData)) { ContentType = "application/json" };
+			try
+			{
+				var resetToken = await UserManager.GeneratePasswordResetTokenAsync(user);
+				var result = await UserManager.ResetPasswordAsync(user, resetToken, SecurityForm.Password);
 
-			await sender.SendMessageAsync(message);
-			await sender.DisposeAsync();
-			await client.DisposeAsync();
-			///////////////////////////////////
-			NavigationManager.NavigateTo($"/Account/ResetPassword?returnUrl=/Account/Manage/Security");
+				if (result.Succeeded)
+				{
+					MessageText = " Your password has been changed successfully.";
+					MessageType = "success";
+					SecurityForm = new SecurityFormModel();
+
+				}
+				else
+				{
+					MessageText = "Failed to change password.";
+					MessageType = "error";
+				}
+
+			}
+			catch
+			{
+				MessageText = "Failed to change password.";
+				MessageType = "error";
+
+			}
 		}
-		var result = await UserManager.ResetPasswordAsync(user, SecurityForm.CurrentPassword, SecurityForm.Password);
-		if (result.Succeeded)
-		{
-			message = "Your password has been changed successfully.";
-		}
-		else
-		{
-			message = "Error: Failed to change password.";
-		}
+	
+		
+
 	}
+
+	private async Task DeleteOnValidSubmitAsync()
+	{
+		
+		try
+		{
+			if (DeleteForm.Delete == true)
+			{
+				var result = await UserManager.DeleteAsync(user);
+				if (!result.Succeeded)
+				{
+					MessageText = "Unexpected error occurred in deleting user.";
+					MessageType = "Error";
+				}
+
+				await SignInManager.SignOutAsync();
+
+				var userId = await UserManager.GetUserIdAsync(user);
+
+				RedirectManager.RedirectTo("/");
+			}
+		}
+		catch
+		{
+			MessageText = "Unexpected error occurred in deleting user.";
+			MessageType = "Error";
+		}
+
+
+
+	}
+
+
 
 	public class SecurityFormModel
 	{
@@ -147,9 +178,10 @@
 
 	}
 
-	public class DeleteFormModel
+	public class DeleteAccount
 	{
-		[Display(Name = "Yes, I want to delete my account.", Order = 3)]
-		public bool DeleteAccount { get; set; } = false;
+		public bool Delete { get; set; } = false;
 	}
+
+	
 }

@@ -83,7 +83,7 @@
     {
         try
         {
-            var result = await Http.PostAsJsonAsync("https://subscriptionprovider.azurewebsites.net/api/Subscribe?code=mEuFbDNYIgC2sLvEex9P-bBBqXl92mzbEaRsUQ0sEtsvAzFu9g9yEg==", SubscribeForm);
+            var result = await Http.PostAsJsonAsync(Configuration["SubscriptionApiUri"], SubscribeForm);
             if (result.IsSuccessStatusCode)
             {
                 MessageText = "You are successfully subscribed!";

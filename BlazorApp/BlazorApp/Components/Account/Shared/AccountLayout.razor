@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @layout BlazorApp.Components.Layout.MainLayout
 @inject NavigationManager NavigationManager
-
 @if (HttpContext is null)
 {
     <p>Loading...</p>
@@ -25,4 +24,5 @@ else
             NavigationManager.Refresh(forceReload: true);
         }
     }
+    
 }

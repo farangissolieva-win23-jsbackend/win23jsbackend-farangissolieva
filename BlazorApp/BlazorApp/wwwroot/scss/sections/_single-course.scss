@@ -5,10 +5,9 @@
     z-index: 1;
 
     .overlay {
-        background-color: rgba(0, 0, 0, 0.7);
         position: absolute;
         width: 100%;
-        padding-top: 35%;
+        padding-top: 30%;
         overflow: hidden;
 
         .header-img-background {
@@ -19,8 +18,7 @@
             top: 0;
             z-index: -2;
             height: auto;
-            max-height: 677px;
-            object-fit: cover;
+            max-height: 500px;
         }
     }
 

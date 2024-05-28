@@ -21,7 +21,7 @@
                 width: 120px;
             }
 
-            form {
+            .form-container {
                 position: absolute;
                 bottom: 0;
                 right: 0;
@@ -43,9 +43,9 @@
                     
                     i {
                         position: absolute;
-                        top: 60%;
-                        left: 50%;
-                        transform: translate(-40%, -40%);
+                        top: 50%;
+                        left: 45%;
+                        transform: translate(-30%, -30%);
                     }
 
                     &:hover {

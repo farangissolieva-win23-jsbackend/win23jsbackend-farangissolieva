@@ -100,11 +100,11 @@
             height: 0;
 
             &:checked + .slider {
-                background-color: var(--color-theme);
+                background-color: var(--color-success-dark);
             }
 
             &:focus + .slider {
-                box-shadow: 0 0 1px var(--color-theme);
+                box-shadow: 0 0 1px var(--color-success-dark);
             }
 
             &:checked + .slider:before {

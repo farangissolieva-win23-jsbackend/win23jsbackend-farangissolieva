@@ -1,5 +1,4 @@
 ﻿@page "/Account/Register"
-@using BlazorApp.Filters
 
 @rendermode InteractiveServer
 
@@ -113,16 +112,8 @@
         }
 
         // send verification code
-        var client = new ServiceBusClient("Endpoint=sb://servicebus-silicon.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Iho2H8jesOGDJYWEU/BAOI3nW+PQDk8yU+ASbMRVmUw=");
-        var sender = client.CreateSender("verification_request");
-        var jsonData = JsonConvert.SerializeObject(new { Email = SignupForm.Email });
-        var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(jsonData)) {ContentType = "application/json" };
-
-        await sender.SendMessageAsync(message);
-        await sender.DisposeAsync();
-        await client.DisposeAsync();
-        ///////////////////////////////////
-     
+        await MessageService.SendMessageAsync("verification_request", SignupForm.Email);
+             
         if (UserManager.Options.SignIn.RequireConfirmedAccount)
         {
             RedirectManager.RedirectTo(

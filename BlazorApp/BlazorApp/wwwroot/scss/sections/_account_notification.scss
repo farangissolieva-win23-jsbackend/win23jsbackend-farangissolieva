@@ -1,4 +1,4 @@
-﻿#account-security {
+﻿#account-notification {
     display: grid;
     grid-template-columns: 1fr;
     gap: 20px;
@@ -41,13 +41,6 @@
                     gap: 1rem 0;
                     grid-template-columns: 1fr;
                     grid-template-areas: "current-password" " new-password" "confirm-password" "buttons";
-
-                    @include lg {
-                        gap: 1rem 2rem;
-                        grid-template-columns: 1fr 1fr;
-                        grid-template-areas: "current-password current-password" "new-password confirm-password" "buttons buttons";
-                    }
-
 
                     #current-password {
                         grid-area: current-password;
@@ -101,8 +94,6 @@
                             justify-content: left;
                             align-items: left;
                         }
-
-                        
                     }
                 }
             }

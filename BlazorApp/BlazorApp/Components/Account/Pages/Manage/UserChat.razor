@@ -1,0 +1,37 @@
+﻿@page "/Account/Manage/UserChat"
+
+<div class="container">
+	<section class="chat-section">
+		<AsideProfile UserInfo="user" />
+
+		<div class="details">
+
+			<section class="password-info">
+				
+					<Chat />
+
+			</section>
+
+		</div>
+	</section>
+</div>
+
+
+@code {
+	private string? message;
+
+	[SupplyParameterFromQuery]
+	private string? ReturnUrl { get; set; }
+	
+
+	private ApplicationUser user = default!;
+
+	[CascadingParameter]
+	private HttpContext HttpContext { get; set; } = default!;
+
+	protected override async Task OnInitializedAsync()
+	{
+		user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+	}
+	
+}

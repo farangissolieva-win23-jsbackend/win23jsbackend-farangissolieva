@@ -1,18 +1,19 @@
-﻿@inject NavigationManager NavManager
-
-<aside>
+﻿<aside>
     <div class="profile-info">
         <div class="profile-img">
+            
             @if (string.IsNullOrEmpty(ProfileImg))
             {
-                <img src="images/uploads/profiles/avatar.svg" alt="@($"{FirstName} {LastName}")" />
+                <img src="https://siliconstorageaccount.blob.core.windows.net/profiles/avatar.svg" alt="@($"{FirstName} {LastName}")" />
             }
             else
             {
-                <img src="images/uploads/profiles/@ProfileImg" alt="@($"{FirstName} {LastName}")" />
+                <img src="@ProfileImg" alt="@($"{FirstName} {LastName}")" />
             }
-            <InputFile id="fileUploader" OnChange="HandleFileUpload" style="display: none" />
-            <label for="fileUploader" class="button-circle"><i class="fa-regular fa-refresh"></i> </label>
+            <form class="form-container" id="uploadForm" >
+                <UploadProfileImage  />
+             </form>
+                        
         </div>
 
         <h5>@($"{FirstName} {LastName}")</h5>
@@ -30,16 +31,26 @@
         <NavLink class="@(IsActive("Account/Manage/Notification") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/Notification">
             <i class="fa-regular fa-bell"></i> <span>Notification</span>
         </NavLink>
+        <NavLink class="@(IsActive("Account/Manage/UserChat") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/UserChat">
+            <i class="fa-regular fa-bell"></i> <span>Messages</span>
+        </NavLink>
         <NavLink class="@(IsActive("Account/Manage/SavedCourses") ? "btn-theme-s" : "btn-transparent")" href="Account/Manage/SavedCourses">
             <i class="fa-regular fa-bookmark"></i> <span>Saved Courses</span>
         </NavLink>
-        <NavLink class="btn-transparent" href="Auth/SignOut">
+        <NavLink href="/Account/Manage/logout" Class="btn-transparent">
             <i class="fa-regular fa-right-from-bracket"></i> <span>Sign Out</span>
         </NavLink>
+
+       
     </nav>
 </aside>
 
+
+
 @code {
+    
+    private string? currentUrl;
+
     [Parameter]
     public ApplicationUser UserInfo { get; set; }
 
@@ -47,34 +58,11 @@
     public string FirstName => UserInfo?.UserProfile?.FistName ?? string.Empty;
     public string LastName => UserInfo?.UserProfile?.LastName ?? string.Empty;
     public string ProfileImg => UserInfo?.UserProfile?.ProfileImg ?? string.Empty;
-
-    private IBrowserFile file;
-
-    private async Task HandleFileUpload(InputFileChangeEventArgs e)
-    {
-        file = e.File;
-
-        if (file != null)
-        {
-            var user = await UserManager.FindByEmailAsync(UserInfo.Email!);
-            if (user != null)
-            {
-                var fileName = $"p_{user.Id}_{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
-                var filePath = Path.Combine("wwwroot/images/uploads/profiles", fileName);
-
-                using (var fs = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.OpenReadStream().CopyToAsync(fs);
-                }
-
-                user.UserProfile!.ProfileImg = fileName;
-                await UserManager.UpdateAsync(user);
-            }
-        }
-    }
-
+       
     private bool IsActive(string urlSegment)
     {
-        return NavManager.Uri.Contains(urlSegment, StringComparison.OrdinalIgnoreCase);
+        return NavigationManager.Uri.Contains(urlSegment, StringComparison.OrdinalIgnoreCase);
     }
+    
+   
 }

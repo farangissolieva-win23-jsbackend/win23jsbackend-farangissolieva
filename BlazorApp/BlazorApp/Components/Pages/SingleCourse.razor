@@ -1,151 +1,227 @@
-﻿@page "/courses/course"
+﻿@page "/courses/course/{courseId}"
+@rendermode InteractiveServer
+
 <section id="single-course">
-    <div class="overlay">
-        <img class="header-img-background" src="/images/courses/" >
-    </div>
-    <div class="container">
-
-        <header>
-            <div class="button-group">
-                <button class="best-seller" asp-controller="Courses" asp-action="BestSeller">Best seller</button>
-                <button class="digital" asp-controller="Courses" asp-action="Digital">Digital</button>
-            </div>
-            <h1>Name</h1>
-            <p>Ingress</p>
-
-            <div class="duration-rating">
-                <div class="stars">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-regular fa-star not-active"></i>
+      @if (course == null)
+        {
+            <p><em>No courses founded yet. Please wait...</em></p>
+        }
+        else
+        {
+        <div class="overlay">
+            <img class="header-img-background" src="@course.ImgHeaderUrl">
+        </div>
+        <div class="container">
+            <header>
+                <div class="button-group">
+                    <button class="best-seller" asp-controller="Courses" asp-action="BestSeller">Best seller</button>
+                    <button class="digital" asp-controller="Courses" asp-action="Digital">Digital</button>
                 </div>
-                <p>K reviews</p>
-                <span> | </span>
+                <h1>@course.Title</h1>
+                <p>@course.Ingress</p>
 
-                <p><i class="fa-sharp fa-light fa-thumbs-up"></i> likes"</p>
-                <span> | </span>
+                <div class="duration-rating">
+                    <div class="stars">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-regular fa-star not-active"></i>
+                    </div>
+                    <p>@course.Reviews</p>
+                    <span> | </span>
 
-                <div class="duration"><i class="fa-regular fa-clock"></i> hours</div>
-            </div>
+                    <p><i class="fa-sharp fa-light fa-thumbs-up"></i> @course.Likes"</p>
+                    <span> | </span>
 
-            <div class="author-container">
-                <img src="/images/authors/avatar.svg" />
-                <div class="author">
-                    <h6>Created by</h6>
-                    <p>AuthorName</p>
+                    <div class="duration"><i class="fa-regular fa-clock"></i> @course.Hours</div>
+                </div>
+
+                <div class="author-container">
+                    <img src="@course.AuthorImgUrl" />
+                    <div class="author">
+                        <h6>Created by</h6>
+                        <p>@course.AuthorName</p>
+                    </div>
+                </div>
+            </header>
+            <div class="content">
+               <div class="description">
+                    @if (!string.IsNullOrEmpty(MessageText))
+                    {
+                        <StatusMessageAlert MessageText="@MessageText" MessageType="@MessageType" />
+                    }
+                    <h2>Course Description</h2>
+                    <p>@course.Content!.Description</p>
+                    <h4>What you'll learn</h4>
+                    <div class="list">
+                        <p><i class="fa-regular fa-circle-check"></i>Sed lectus donec amet eu turpis interdum.</p>
+                        <p><i class="fa-regular fa-circle-check"></i>Nulla at consectetur vitae dignissim porttitor.</p>
+                        <p><i class="fa-regular fa-circle-check"></i>Phasellus id vitae dui aliquet mi.</p>
+                        <p><i class="fa-regular fa-circle-check"></i>Integer cursus vitae, odio feugiat iaculis aliquet diam, et purus.</p>
+                        <p><i class="fa-regular fa-circle-check"></i>In aenean dolor diam tortor orci eu.</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <h4>This course includes:</h4>
+                    <p><i class="fa-solid fa-display"></i>@course.Content.Includes![0]</p>
+                    <p><i class="fa-regular fa-file-lines"></i>@course.Content.Includes[1]</p>
+                    <p><i class="fa-regular fa-down-to-bracket"></i>@course.Content.Includes[2]</p>
+                    <p><i class="fa-regular fa-infinity"></i>@course.Content.Includes[3]</p>
+                    <p><i class="fa-regular fa-trophy"></i>@course.Content.Includes[4]</p>
+                    <h3>
+                        $
+                        @if (@course.Prices!.Discount > 0)
+                        {
+                            @course.Prices.Discount <span>$@course.Prices.Price</span>
+                        }
+                        else
+                        {
+                            @course.Prices!.Price
+                        }
+                    </h3>
+                    <EditForm FormName="joincourse" method="post" Model="UserCourseForm" OnSubmit="JoinCourseAsync" asp-route-ReturnUrl="@ReturnUrl">
+                        <DataAnnotationsValidator />
+                         <InputText @bind-Value="UserCourseForm.CourseId" hidden/>
+                         <button type="submit" class="btn-theme-s">Join course</button>
+                    </EditForm>
+
                 </div>
             </div>
-        </header>
-        <div class="content">
-           
-            <div class="description">
-                <h2>Course Description</h2>
-                <p>Description</p>
-                <h4>What you'll learn</h4>
-                <div class="list">
-                    @* foreach (var item in Model.ProgramGoals.Split(";")) *@
-                    <p><i class="fa-regular fa-circle-check"></i> item</p>
-                </div>
-            </div>
-            <div class="info-card">
-                <h4>This course includes:</h4>
-                <p><i class="fa-solid fa-display"></i> Duration hours on-demand video</p>
-                <p><i class="fa-regular fa-file-lines"></i>ArticleCount articles</p>
-                <p><i class="fa-regular fa-down-to-bracket"></i>DownloadedResourses downloadable resources</p>
-                <p><i class="fa-regular fa-infinity"></i> Full lifetime access</p>
-                <p><i class="fa-regular fa-trophy"></i> Certificate of completion</p>
-                <h3>
-                    
-                         <span>Price</span>
-                    
-                </h3>
-                <form asp-controller="Courses" asp-action="Join" method="post">
-                    <button type="submit" class="btn-theme-s">Join course</button>
-                </form>
 
+            <div class="program-detail">
+                <h2>Program Details</h2>
+                <div class="step-container">
+                    @if (course!.Content!.ProgramDetails != null)
+                    {
+                        @foreach (var detail in course.Content.ProgramDetails)
+                        {
+                            <div class="step">
+                                <div class="number">
+                                    <h2>@detail.Id</h2>
+                                </div>
+                                <div class="text">
+                                    <h3>@detail.Title</h3>
+                                    <p>@detail.Description</p>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
             </div>
         </div>
-
-        <div class="program-detail">
-            <h2>Program Details</h2>
-            <div class="step-container">
-                <div class="step">
-                    <div class="number">
-                        <h2>1</h2>
-                    </div>
-                    <div class="text">
-                        <h3>Introduction. Getting started</h3>
-                        <p>Nulla faucibus mauris pellentesque blandit faucibus non. Sit ut et at suspendisse gravida hendrerit tempus placerat.</p>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="number">
-                        <h2>2</h2>
-                    </div>
-                    <div class="text">
-                        <h3>The ultimate HTML developer: advanced HTML</h3>
-                        <p>Lobortis diam elit id nibh ultrices sed penatibus donec. Nibh iaculis eu sit cras ultricies. Nam eu eget etiam egestas donec scelerisque ut ac enim. Vitae ac nisl, enim nec accumsan vitae est.</p>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="number">
-                        <h2>3</h2>
-                    </div>
-                    <div class="text">
-                        <h3>CSS & CSS3: basic</h3>
-                        <p>Duis euismod enim, facilisis risus tellus pharetra lectus diam neque. Nec ultrices mi faucibus est. Magna ullamcorper potenti elementum ultricies auctor nec volutpat augue.</p>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="number">
-                        <h2>4</h2>
-                    </div>
-                    <div class="text">
-                        <h3>JavaScript basics for beginners</h3>
-                        <p>Morbi porttitor risus imperdiet a, nisl mattis. Amet, faucibus eget in platea vitae, velit, erat eget velit. At lacus ut proin erat.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="number">
-                        <h2>5</h2>
-                    </div>
-                    <div class="text">
-                        <h3>Understanding APIs</h3>
-                        <p>Risus morbi euismod in congue scelerisque fusce pellentesque diam consequat. Nisi mauris nibh sed est morbi amet arcu urna. Malesuada feugiat quisque consectetur elementum diam vitae. Dictumst facilisis odio eu quis maecenas risus odio fames bibendum.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="number">
-                        <h2>6</h2>
-                    </div>
-                    <div class="text">
-                        <h3>C# and .NET from beginner to advanced</h3>
-                        <p>Quis risus quisque diam diam. Volutpat neque eget eu faucibus sed urna fermentum risus. Est, mauris morbi nibh massa.</p>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="author-info">
-            <img src="/images/authors/"/>
-            <div class="text-block">
-                <p>Learn from the best</p>
-                <h1>AuthorName</h1>
-                <p>AuthorDescription</p>
-                <div class="buttons">
-                    <a class="btn-red"><i class="fa-brands fa-youtube"></i> subscribers</a>
-                    <a class="btn-gray"><i class="fa-brands fa-square-facebook"></i>followers</a>
-                </div>
-                <img class="decor" src="~/images/single-course/pattern.svg" />
-            </div>
-
-        </div>
-    </div>
+    }
+   
 
 </section>
+
+@code {
+    [Parameter]
+    public string? CourseId { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? MessageType { get; set; }
+    [SupplyParameterFromQuery]
+    public string? MessageText { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromForm]
+    public UserCourseModel UserCourseForm { get; set; } = new();
+
+    private SingleCourseModel? course;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (!string.IsNullOrEmpty(CourseId))
+        {
+            UserCourseForm.CourseId = CourseId;
+            await LoadCourseAsync(CourseId);
+        }
+    }
+
+    private async Task LoadCourseAsync(string courseId)
+    {
+        try
+        {
+            var query = new GraphQLQuery
+                {
+                    Query = $"{{ getCourseById(id: \"{courseId}\") {{ id title likes likePercentage isBestseller isDigital imgHeaderUrl authors {{ authorName authorImageUrl }} prices {{ price discount }} hours reviews content {{ description includes programDetails {{ id title description }} }} }} }}"
+                };
+            var response = await Http.PostAsJsonAsync(Configuration["CoursesApiUri"], query);
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var result = System.Text.Json.JsonSerializer.Deserialize<DynamicGraphQLResponse>(jsonResponse);
+                var courseData = result?.Data.GetProperty("getCourseById");
+
+                if (courseData.HasValue)
+                {
+                    var course = courseData.Value;
+
+                    this.course = new SingleCourseModel
+                        {
+                            Id = course.GetProperty("id").GetString()!,
+                            Title = course.GetProperty("title").GetString(),
+                            Likes = course.GetProperty("likes").GetString(),
+                            LikePercentage = course.GetProperty("likePercentage").GetString(),
+                            IsBestseller = course.GetProperty("isBestseller").GetBoolean(),
+                            ImgHeaderUrl = course.GetProperty("imgHeaderUrl").GetString(),
+                            AuthorName = course.GetProperty("authors").EnumerateArray().First().GetProperty("authorName").GetString()!,
+                            AuthorImgUrl = course.GetProperty("authors").EnumerateArray().First().GetProperty("authorImageUrl").GetString()!,
+                            Prices = new Prices
+                            {
+                                Price = course.GetProperty("prices").GetProperty("price").GetDecimal(),
+                                Discount = course.GetProperty("prices").GetProperty("discount").GetDecimal()
+                            },
+                            Hours = course.GetProperty("hours").GetString(),
+                            Reviews = course.GetProperty("reviews").GetString(),
+                            Content = new Content
+                            {
+                                Description = course.GetProperty("content").TryGetProperty("description", out var descriptionProp) ? descriptionProp.GetString() : string.Empty,
+                                Includes = course.GetProperty("content").TryGetProperty("includes", out var includesProp) ? includesProp.EnumerateArray().Select(x => x.GetString()).ToArray() : Array.Empty<string>(),
+                                ProgramDetails = course.GetProperty("content").TryGetProperty("programDetails", out var programDetailsProp) ?
+                             programDetailsProp.EnumerateArray().Select(detail => new ProgramDetailItem
+                             {
+                                 Id = detail.TryGetProperty("id", out var idProp) ? idProp.GetInt32() : 0,
+                                 Title = detail.TryGetProperty("title", out var titleProp) ? titleProp.GetString() : string.Empty,
+                                 Description = detail.TryGetProperty("description", out var descriptionProp) ? descriptionProp.GetString() : string.Empty
+                             }).ToList() : new List<ProgramDetailItem>()
+                            }
+                        };
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageText = "Something went wrong. Try again!";
+            MessageType = "error";
+            Console.WriteLine(ex);
+        }
+    }
+
+    public async Task JoinCourseAsync()
+    {
+        if (!string.IsNullOrEmpty(CourseId))
+        {
+            if (!string.IsNullOrEmpty(UserCourseForm.CourseId))
+            {
+                
+                await CourseService.JoinCourseAsync(UserCourseForm.CourseId);
+                MessageText = CourseService.MessageText;
+                MessageType = CourseService.MessageType;
+            }
+        }
+
+    }
+
+    public class UserCourseModel
+    {
+       public string CourseId { get; set; } = null!;
+
+    }
+
+        
+}

@@ -1,7 +1,12 @@
+using Azure.Messaging.ServiceBus;
 using BlazorApp.Components;
 using BlazorApp.Components.Account;
 using BlazorApp.Data;
+using BlazorApp.Hubs;
+using BlazorApp.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +21,10 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+builder.Services.AddScoped<SignOutSessionStateManager>();
+
 
 builder.Services.AddAuthentication(options =>
 	{
@@ -50,6 +59,14 @@ builder.Services.ConfigureApplicationCookie(x =>
 });
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddScoped<CourseService>();
+
+var serviceBusConnectionString = builder.Configuration.GetConnectionString("ServiceBusConnection") ?? throw new InvalidOperationException("Connection string 'ServiceBusConnection' not found.");
+builder.Services.AddSingleton(sp => new ServiceBusClient(serviceBusConnectionString));
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddSignalR();
+
+builder.Configuration.AddEnvironmentVariables();
 
 var app = builder.Build();
 
@@ -70,6 +87,9 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+
+app.MapHub<ChatHub>("/chathub");
+
 
 app.MapRazorComponents<App>()
 	.AddInteractiveServerRenderMode()

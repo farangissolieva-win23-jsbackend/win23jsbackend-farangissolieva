@@ -1,0 +1,243 @@
+﻿@page "/myChat"
+@rendermode InteractiveAuto
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.SignalR.Client
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Silicon Chat</PageTitle>
+@if (isConnected)
+{
+    <div class="chat-container">
+        <div class="user-list">
+            <h2>Messages</h2>
+            <ul>
+                @foreach (var user in userList)
+                {
+                    <li class="user-item @(selectedUser == user ? "selected" : "")" @onclick="() => SelectUser(user)">
+                        <img src="@user.UserProfile!.ProfileImg" />
+                        <span>@user.UserProfile!.FistName @user.UserProfile.LastName</span>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="chat-window">
+            <div class="chat-header">
+                @if (selectedUser != null)
+                {
+                    <h6>@selectedUser.UserProfile!.FistName @selectedUser.UserProfile.LastName</h6>
+                }
+            </div>
+            <hr/>
+            <div class="chat-messages">
+                @foreach (var message in messages)
+                {
+                    <div class="message @(message.UserName == userName ? "message-right" : "message-left")">
+                        <img src="@message.ProfileImgUrl" alt="User Photo" class="user-photo" />
+                        <div class="message-content">
+                            <span class="text">@message.Message</span>
+                            <span class="timestamp">@message.Timestamp.ToShortDateString() @message.Timestamp.ToShortTimeString()</span>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="typing-indicator">
+                @if (!string.IsNullOrEmpty(typingUser))
+                {
+                    <em>@typingUser is typing...</em>
+                }
+            </div>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" placeholder="Type your message..." @bind="currentMessage" @oninput="async () => await NotifyTyping()">
+                <button class="btn-theme" @onclick="Send"><i class="fa-regular fa-paper-plane-top"></i></button>
+            </div>
+        </div>
+       
+    </div>
+}
+else
+{
+    <div class="alert alert-warning" role="alert">
+        Connecting to the chat server...
+    </div>
+}
+
+@code {
+    private HubConnection? connection;
+    private bool isConnected => connection?.State == HubConnectionState.Connected;
+    private string? userName;
+    private string? firstName;
+    private string? lastName;
+    private string? profileImgUrl;
+    private string? typingUser;
+    private string? userId;
+    private System.Timers.Timer? typingTimer;
+
+    private List<ChatMessage> messages = new();
+    private List<User> userList = new();
+    private User? selectedUser;
+    private string? currentMessage;
+
+    private void SelectUser(User user)
+    {
+        selectedUser = user;
+        messages.Clear();
+        typingUser = null;
+    }
+
+    private async Task NotifyTyping() => await connection!.SendAsync("Typing", userName);
+
+    private async Task Send()
+    {
+        if (!string.IsNullOrEmpty(currentMessage))
+        {
+            var message = new ChatMessage
+                {
+                    UserName = userName!,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Message = currentMessage,
+                    ProfileImgUrl = profileImgUrl,
+                    Timestamp = DateTime.Now
+                };
+
+            if (selectedUser != null)
+            {
+                await SendMessageToUser(selectedUser.UserName, currentMessage);
+                Console.WriteLine("working");
+            }
+            else
+            {
+                await SendMessageToAll(currentMessage);
+            }
+            
+            currentMessage = string.Empty;
+        }
+    }
+
+    private async Task SendMessageToAll(string message)
+    {
+        var chatMessage = CreateChatMessage(message);
+        await connection!.SendAsync("SendMessageToAll", chatMessage.UserName, chatMessage.FirstName, chatMessage.LastName, chatMessage.ProfileImgUrl, chatMessage.Message, chatMessage.Timestamp);
+    }
+
+    private async Task SendMessageToUser(string recipientUserName, string message)
+    {
+        var chatMessage = CreateChatMessage(message);
+        await connection!.SendAsync("SendMessageToUser", recipientUserName, chatMessage.UserName,  chatMessage.FirstName, chatMessage.LastName, chatMessage.ProfileImgUrl, chatMessage.Message, chatMessage.Timestamp);
+    
+    
+    }
+
+    private ChatMessage CreateChatMessage(string message)
+    {
+        return new ChatMessage
+            {
+                UserName = userName!,
+                FirstName = firstName,
+                LastName = lastName,
+                Message = message,
+                ProfileImgUrl = profileImgUrl,
+                Timestamp = DateTime.Now
+            };
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        userName = user.Identity?.IsAuthenticated == true ? user.Identity.Name : "Anonymous";
+        userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        
+        var currentUser = await Http.GetFromJsonAsync<User>($"https://user-provider.azurewebsites.net/api/users/{userId}?code=JI_cJTOymXW19XwwaIuscnHT_LZ5SYp5fWroilIkTQq3AzFuXMbdrw%3D%3D");
+        if (currentUser != null && currentUser.UserProfile != null )
+        {
+            firstName = currentUser.UserProfile.FistName;
+            lastName = currentUser.UserProfile.LastName;
+            profileImgUrl = currentUser.UserProfile.ProfileImg;
+        }
+
+        connection = new HubConnectionBuilder().WithUrl(NavigationManager.ToAbsoluteUri("/chathub")).Build();
+              
+        connection.On<string>("UserTyping", (typingUserName) =>
+        {
+            typingUser = typingUserName;
+            InvokeAsync(StateHasChanged);
+
+            typingTimer?.Stop();
+            typingTimer = new System.Timers.Timer(2000);
+            typingTimer.Elapsed += (s, e) =>
+            {
+                typingUser = null;
+                InvokeAsync(StateHasChanged);
+            };
+
+            typingTimer.Start();
+        });
+
+        connection.On<string, string, string, string, string, DateTime>("ReceiveMessage", (senderUserName, senderUserFirstName, senderUserLastName, senderUserProfileImgUrl, senderUserMessage, senderUserTimestamp) =>
+         {
+             messages.Add(new ChatMessage
+                 {
+                     UserName = senderUserName,
+                     FirstName = senderUserFirstName,
+                     LastName = senderUserLastName,
+                     Message = senderUserMessage,
+                     ProfileImgUrl = senderUserProfileImgUrl,
+                     Timestamp = senderUserTimestamp
+                 });
+             InvokeAsync(StateHasChanged);
+         });
+
+        await connection.StartAsync();
+        await LoadUsersAsync(); 
+      
+    }
+
+    private async Task LoadUsersAsync()
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<List<User>>("https://user-provider.azurewebsites.net/api/GetUsers?code=Ahx77iLeGgcxJYsfS9r2XoifGkOGflBc_j12PSV3nNJKAzFuUOn13g%3D%3D");
+            if (result != null)
+            {
+               userList = result.Where(u => u.UserName != userName).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in getting users {ex}");
+        }
+      
+    }
+
+    public class User
+    {
+        public string UserName { get; set; } = null!;
+        public UserProfile? UserProfile { get; set; }
+    }
+
+    public class UserProfile
+    {
+        public string? FistName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfileImg { get; set; }
+
+    }
+
+    public class ChatMessage
+    {
+        public string UserName { get; set; } = null!;
+        public string? Message { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? ProfileImgUrl { get; set; }
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+    }
+}
+

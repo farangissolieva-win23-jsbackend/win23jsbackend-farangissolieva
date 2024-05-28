@@ -1,11 +1,7 @@
 ﻿@page "/courses"
-@using System.Text.Json;
-@using System.Text.Json.Serialization;
-@using BlazorApp.Models
-
+@inherits LayoutComponentBase
 @attribute [Authorize]
 @attribute [StreamRendering]
-
 
 <section id="courses">
 	<div class="container">
@@ -51,23 +47,12 @@
 						<div class="image-container">
 							<img src="@course.ImgUrl" />
 
-							@if (IsInAccountManageSection())
-							{
-								<!-- Delete course button -->
-								<form asp-controller="Account" asp-action="DeleteCourse" method="post">
-									<input asp-for="@course.Id" name="id" type="hidden" value="@course.Id" />
-									<button class="btn-sell" type="submit"><i class="fa-solid fa-bookmark"></i></button>
-								</form>
-							}
-							else
-							{
-								<!-- Add course button -->
-								<form asp-controller="Courses" asp-action="Join" method="post">
-									<input asp-for="@course.Id" name="id" type="hidden" value="@course.Id" />
-									<button class="btn-sell" type="submit"><i class="fa-regular fa-bookmark"></i></button>
-								</form>
-							}
-
+							<!-- Add course button -->
+							<form asp-controller="Courses" asp-action="Join" method="post">
+								<input asp-for="@course.Id" name="id" type="hidden" value="@course.Id" />
+								<button class="btn-sell" type="submit"><i class="fa-regular fa-bookmark"></i></button>
+							</form>
+							
 
 							@if (course.IsBestseller == true)
 							{
@@ -119,7 +104,7 @@
 	[SupplyParameterFromQuery]
 	public string? ReturnUrl { get; set; }
 
-	private List<Category>? categories { get; set; }
+	private List<CategoryModel>? categories { get; set; }
 	public string? SearchQuery { get; set; }
 	public int? SelectedCategoryId { get; set; }
 
@@ -141,7 +126,8 @@
 				{
 					Query = "{ getCourses { id title likes likePercentage isBestseller imgUrl authors{authorName} prices{price discount} categoryEntity{id name} hours reviews } }"
 				};
-			var response = await Http.PostAsJsonAsync("https://courseprovidersilicon.azurewebsites.net/api/GraphQL", query);
+			
+			var response = await Http.PostAsJsonAsync(Configuration["CoursesApiUri"], query);
 			if (response.IsSuccessStatusCode)
 			{
 				var jsonResponse = await response.Content.ReadAsStringAsync();
@@ -189,19 +175,19 @@
 				{
 					Query = "{ getCourses { categoryEntity { id name } } }"
 				};
-			var response = await Http.PostAsJsonAsync("https://courseprovidersilicon.azurewebsites.net/api/GraphQL", categoriesQuery);
+			var response = await Http.PostAsJsonAsync(Configuration["CoursesApiUri"], categoriesQuery);
 			if (response.IsSuccessStatusCode)
 			{
 				var jsonResponse = await response.Content.ReadAsStringAsync();
 				var result = System.Text.Json.JsonSerializer.Deserialize<DynamicGraphQLResponse>(jsonResponse);
 
 				var categoryArray = result!.Data.GetProperty("getCourses").EnumerateArray()
-					.Select(course => new Category
+					.Select(course => new CategoryModel
 						{
 							Id = course.GetProperty("categoryEntity").GetProperty("id").GetInt32(),
 							Name = course.GetProperty("categoryEntity").GetProperty("name").GetString()!
 						})
-					.ToList() ?? new List<Category>();
+					.ToList() ?? new List<CategoryModel>();
 
 				categories = categoryArray
 					.GroupBy(c => c.Id)
@@ -234,31 +220,5 @@
 	{
 		return NavigationManager.Uri.Contains("account/manage", StringComparison.OrdinalIgnoreCase);
 	}
-
-	public class CourseModel
-	{
-		public string Id { get; set; } = null!;
-		public string? ImgUrl { get; set; }
-		public bool IsBestseller { get; set; }
-		public string? Title { get; set; }
-		public string? Ingress { get; set; }
-		public string? Reviews { get; set; }
-		public string? Likes { get; set; }
-		public string? LikePercentage { get; set; }
-		public string? Hours { get; set; }
-		public string AuthorName { get; set; } = null!;
-		public decimal Price { get; set; }
-		public decimal Discount { get; set; }
-		public Category? Category { get; set; }
-	}
-
-	public class Category
-	{
-		public int Id { get; set; }
-		public string? Name { get; set; }
-
-
-	}
-
 
 }

@@ -56,7 +56,7 @@
 
     private async Task OnValidSubmit(EditContext editContext)
     {
-        var result = await Http.PostAsJsonAsync("https://varificationprovider-silicon.azurewebsites.net/api/validate?code=vHmvVCO1u0-5fkAXQ7e3Xh-29PxsKGhNsZT9O9fsd8jhAzFuzHy0Gg==", new { Email = Email, Code = VerifyCodeForm.Code });
+        var result = await Http.PostAsJsonAsync(Configuration["Varification_Provider_Validate_ApiUri"], new { Email = Email, Code = VerifyCodeForm.Code });
         if (result.IsSuccessStatusCode)
         {
             var user = await UserManager.FindByEmailAsync(Email!);
@@ -75,13 +75,17 @@
     {
         try
         {
-            var client = new ServiceBusClient("Endpoint=sb://servicebus-silicon.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Iho2H8jesOGDJYWEU/BAOI3nW+PQDk8yU+ASbMRVmUw=");
-            var sender = client.CreateSender("verification_request");
-            var jsonData = JsonConvert.SerializeObject(new { Email = Email });
-            var message = new ServiceBusMessage(Encoding.UTF8.GetBytes(jsonData)) { ContentType = "application/json" };
-            await sender.SendMessageAsync(message);
-            await sender.DisposeAsync();
-            await client.DisposeAsync();
+            // send verification code
+            await MessageService.SendMessageAsync("verification_request", Email!);
+
+            if (UserManager.Options.SignIn.RequireConfirmedAccount)
+            {
+                RedirectManager.RedirectTo(
+                    "Account/RegisterConfirmation",
+                    new() { ["email"] = Email, ["returnUrl"] = ReturnUrl });
+            }
+
+            RedirectManager.RedirectTo(ReturnUrl);
             MessageText = "Code is resend to your email!";
             MessageType = "info";
         }

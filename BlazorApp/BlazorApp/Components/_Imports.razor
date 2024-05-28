@@ -11,6 +11,7 @@
 @using Microsoft.JSInterop
 @using BlazorApp
 @using BlazorApp.Client
+@using BlazorApp.Client.Pages
 @using BlazorApp.Components
 @using BlazorApp.Components.Sections
 @using System.ComponentModel.DataAnnotations
@@ -24,11 +25,19 @@
 @using Microsoft.AspNetCore.Authentication
 @using BlazorApp.Filters
 @using Microsoft.AspNetCore.Authorization
+@using BlazorApp.Models
+@using BlazorApp.Services
+@using System.Text.Json;
+@using System.Text.Json.Serialization;
 
+
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject MessageService MessageService
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
+@inject CourseService CourseService
 
 @inject HttpClient Http
 @inject UserManager<ApplicationUser> UserManager
@@ -39,8 +48,6 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 
-@inject UserManager<ApplicationUser> UserManager
-@inject IEmailSender<ApplicationUser> EmailSender
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 

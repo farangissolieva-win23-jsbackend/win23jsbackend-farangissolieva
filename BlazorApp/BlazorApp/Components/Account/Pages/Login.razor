@@ -1,12 +1,12 @@
 ﻿@page "/Account/Login"
-
+@inherits LayoutComponentBase
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@layout BlazorApp.Components.Layout.MainLayout
 
 <PageTitle>Sign in</PageTitle>
-
 <section class="signin">
     <div class="container">
 

@@ -1,28 +1,34 @@
 ﻿@page "/Account/Manage/Notification"
+@inherits LayoutComponentBase
+@using BlazorApp.Client.Pages
 
 <div class="container">
-	<section id="account-security">
+	<section id="account-notification">
 		<AsideProfile UserInfo="user" />
 
 		<div class="details">
-			<StatusMessage />
-
+			
 			<section class="password-info">
-				<EditForm method="post" Model="NotificationForm" FormName="securityform" OnValidSubmit="OnValidSubmitAsync" asp-route-ReturnUrl="@ReturnUrl" novalidate>
+				@if (!string.IsNullOrEmpty(MessageText))
+				{
+					<StatusMessageAlert MessageText="@MessageText" MessageType="@MessageType" />
+				}
+				<EditForm method="post" Model="NotificationModel" FormName="notificationform" OnValidSubmit="OnValidSubmitAsync" asp-route-ReturnUrl="@ReturnUrl" novalidate>
 					<DataAnnotationsValidator />
+										
 					<h2>Notifications</h2>
-					
 					<div class="content">
 						<div id="form-email" class="input-group">
 							<label>Preferred email for notifications</label>
-							<ValidationMessage For="() => NotificationForm.Email" />
-							<InputText @bind-Value="NotificationForm.Email" type="email" placeholder="example@gmail.com" />
+							<ValidationMessage For="() => NotificationModel.SubscribeFormModel.Email" />
+							<InputText @bind-Value="NotificationModel.SubscribeFormModel.Email" type="email" placeholder="example@gmail.com" />
 						</div>
 						
 						<div class="toggle-container">
 							<div class="btn-switch">
 								<label class="switch" for="subscribe-mode">
-									<InputCheckbox @bind-Value="NotificationForm.IsSubscribe" id="subscribe-mode" />
+									<ValidationMessage For="() => NotificationModel.IsSubscribe" />
+									<InputCheckbox @bind-Value="NotificationModel.IsSubscribe" id="subscribe-mode" />
 									<span class="slider round"></span>
 								</label>
 							</div>
@@ -31,27 +37,15 @@
 								<p>Nec, posuere non felis duis massa vitae aliquet interdum scelerisque. Neque ullamcorper.</p>
 							</div>
 						</div>
+						<SwitchMode />
 						
-						<div class="toggle-container">
-							<div class="btn-switch">
-								<label class="switch" for="switch-mode">
-									<InputCheckbox @bind-Value="NotificationForm.IsDarkMode" id="subscribe-mode" />
-									<span class="slider round"></span>
-								</label>
-							</div>
-							<div class="text">
-								<h6>Use Dark Mode Theme in Application</h6>
-								<p>Tortor massa porttitor enim tristique neque fermentum sed.</p>
-							</div>
-						</div>
-
 						<div class="form-buttons">
 							<button class="btn-gray" type="reset">Cancel</button>
-							<button class="btn-theme" type="submit">Save password</button>
+							<button class="btn-theme" type="submit">Save changes</button>
 						</div>
 					</div>
 				</EditForm>
-
+	
 			</section>
 			
 		</div>
@@ -59,60 +53,89 @@
 </div>
 
 @code {
-	private string? message;
+	[SupplyParameterFromQuery]
+	public string MessageType { get; set; } = "";
+
+	[SupplyParameterFromQuery]
+	public string MessageText { get; set; } = "";
 
 	[SupplyParameterFromQuery]
 	private string? ReturnUrl { get; set; }
-
-	[SupplyParameterFromQuery]
-	private bool? IsDark { get; set; }
-
-	[SupplyParameterFromQuery]
-	private bool? IsSubscribe { get; set; }
-	
+		
 
 	[SupplyParameterFromForm]
-	public NotificationFormModel NotificationForm { get; set; } = new();
-		
+	public NotificationFormModel NotificationModel { get; set; } = new NotificationFormModel();
+
 
 	private ApplicationUser user = default!;
 
 	[CascadingParameter]
 	private HttpContext HttpContext { get; set; } = default!;
 
+	private ElementReference containerElement;
+
 	protected override async Task OnInitializedAsync()
 	{
 		user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-	}
-
-	private async Task OnValidSubmitAsync()
-	{
-		var result = await UserManager.DeleteAsync(user);
-		if (!result.Succeeded)
-		{
-			message = "Error: Unexpected error occurred deleting user.";
-		}
-
-		await SignInManager.SignOutAsync();
-
-		var userId = await UserManager.GetUserIdAsync(user);
-		Logger.LogInformation("User with ID '{UserId}' deleted themselves.", userId);
-
-		RedirectManager.RedirectToCurrentPage();
+		
 	}
 	
+	public async Task OnValidSubmitAsync()
+	{
+		try
+		{
+			if (NotificationModel.IsSubscribe)
+			{
+				var result = await Http.PostAsJsonAsync(Configuration["SubscriptionApiUri"], NotificationModel.SubscribeFormModel);
+				if (result.IsSuccessStatusCode)
+				{
+					MessageText = "You are successfully subscribed!";
+					MessageType = "success";
+				}
+			}
+			else
+			{
+				var result = await Http.PostAsJsonAsync(Configuration["UnSubscriptionApiUri"], NotificationModel.SubscribeFormModel);
+				if (result.IsSuccessStatusCode)
+				{
+					MessageText = "You are successfully unsubscribed!";
+					MessageType = "success";
+				}
+			}
+
+			// var className = NotificationModel.IsDark ? "dark" : "light";
+			// await JS.InvokeVoidAsync("toggleTheme", className);
+		}
+		catch
+		{
+			MessageText = "Subscription failed. Please try again!";
+			MessageType = "danger";
+		}
+
+	}
+
 	public class NotificationFormModel
 	{
-		[Display(Name = "Email address", Prompt = "Enter your email address", Order = 2)]
-		[Required(ErrorMessage = "Email address is required")]
+		public SubscribeFormModel SubscribeFormModel { get; set; } = new SubscribeFormModel();
+		public bool IsSubscribe { get; set; } = false;
+		public bool IsDark { get; set; } = false;
+
+	}
+
+	public class SubscribeFormModel
+	{
 		[EmailAddress]
+		[Required(ErrorMessage = "Email address is required")]
 		[RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email address")]
 		public string Email { get; set; } = null!;
-
-		public bool IsSubscribe { get; set; } = false;
-		
-		public bool IsDarkMode { get; set; } = false;
-
+		public bool DailyNewsletter { get; set; } = false;
+		public bool EventUpdates { get; set; } = false;
+		public bool AdvertisingUpdates { get; set; } = false;
+		public bool StartupsWeekly { get; set; } = false;
+		public bool WeekInReview { get; set; } = false;
+		public bool Podcasts { get; set; } = false;
 	}
 	
 }
+
+	
