@@ -59,13 +59,20 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace BlazorApp.Hubs;
 
-public class ChatHub(ILogger<ChatHub> logger) : Hub
+public class ChatHub(ILogger<ChatHub> logger, IHttpContextAccessor httpContextAccessor) : Hub
 {
     private static readonly ConcurrentDictionary<string, string> UserConnections = new();
     private readonly ILogger<ChatHub> _logger = logger;
-
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     public override Task OnConnectedAsync()
     {
+
+        var userName = _httpContextAccessor.HttpContext!.User.Identity!.Name;
+       //var userName = Context.User?.Identity?.Name;
+        if (!string.IsNullOrEmpty(userName))
+        {
+            UserConnections[userName] = Context.ConnectionId;
+        }
         return base.OnConnectedAsync();
     }
 
