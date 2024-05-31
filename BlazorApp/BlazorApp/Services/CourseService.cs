@@ -8,25 +8,17 @@ using System.Security.Claims;
 
 namespace BlazorApp.Services
 {
-    public class CourseService
+    public class CourseService(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
+                         NavigationManager navigationManager, AuthenticationStateProvider authenticationStateProvider,
+                         MessageService messageService)
     {
-        private readonly ApplicationDbContext _context;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly NavigationManager _navigationManager;
-        private readonly AuthenticationStateProvider _authenticationStateProvider;
-        private readonly MessageService _messageService;
+        private readonly ApplicationDbContext _context = context;
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly NavigationManager _navigationManager = navigationManager;
+        private readonly AuthenticationStateProvider _authenticationStateProvider = authenticationStateProvider;
+        private readonly MessageService _messageService = messageService;
 
-        public CourseService(ApplicationDbContext context, UserManager<ApplicationUser> userManager,
-                             NavigationManager navigationManager, AuthenticationStateProvider authenticationStateProvider,
-                             MessageService messageService)
-        {
-            _context = context;
-            _userManager = userManager;
-            _navigationManager = navigationManager;
-            _authenticationStateProvider = authenticationStateProvider;
-            _messageService = messageService;
-        }
-		public string? MessageText { get; set; }
+        public string? MessageText { get; set; }
 		public string? MessageType { get; set; }
 		public string? ReturnUrl { get; set; }
 		public async Task JoinCourseAsync(string courseId)
